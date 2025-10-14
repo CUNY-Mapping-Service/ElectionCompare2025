@@ -16,6 +16,9 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@maplibre/maplibre-gl-compare": "^0.5.0",
+    "events": "^3.3.0",
+    "maplibre-gl": "^5.9.0",
     "pinia": "^3.0.3",
     "vue": "^3.5.22"
   },
