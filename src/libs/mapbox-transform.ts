@@ -33,6 +33,11 @@ function parseUrl(url: string): UrlObject {
   if (!parts) {
     throw new Error('Unable to parse URL object')
   }
+
+  if (!parts[1] || !parts[2]) {
+    throw new Error('Invalid URL format: missing protocol or authority')
+  }
+
   return {
     protocol: parts[1],
     authority: parts[2],
