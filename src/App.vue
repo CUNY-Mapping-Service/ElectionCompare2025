@@ -10,10 +10,10 @@ import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
 import { isMapboxURL, transformMapboxUrl } from './libs/mapbox-transform';
 
 import cunygclogo from './cunygc_logo.png'
-import thumbnailelectionlegend from './thumbnail_electionlegend.png'
 
 import resultsRaw from './stores/results.geojson?raw';
 import InfoBox from './InfoBox.vue'
+import Legend from './Legend.vue';
 
 // consts
 const MAPBOX_KEY = 'pk.eyJ1IjoiY3VueWN1ciIsImEiOiJfQmNSMF9NIn0.uRgbcFeJbw2xyTUZY8gYeA'
@@ -377,8 +377,9 @@ onMounted(() => {
             <img :src="cunygclogo" alt="CUNY Logo" class="cuny-logo">
         </div>
 
-        <div class="legend">
-            <img :src="thumbnailelectionlegend">
+        <div class="top-overlay">
+            <h2>Vote share by election district</h2>
+            <Legend :COLOR_SCALE="COLOR_SCALE"></Legend>
             <button v-if="clickedId" @click="clearClickedId" class="clear-button">
                 Clear Selection
             </button>
@@ -402,20 +403,23 @@ body {
     height: 100vh;
 }
 
-.legend {
+.top-overlay {
     position: absolute;
     z-index: 2;
     background-color: white;
-    padding: 0.5rem 0.2rem;
+    padding: 0.5rem;
+    border-radius: 5px;
     margin: 5px;
     box-shadow: 2px 2px 8px darkgray;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    max-width: 15rem;
 }
 
-.legend img {
-    max-width: 15rem;
+.top-overlay h2{
+    margin-top: 0;
+    font-size: 1.5rem;
 }
 
 .clear-button {
