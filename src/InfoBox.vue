@@ -31,7 +31,7 @@ const isVisible = computed(() => props.hoveredData !== null);
 
 // Chart refs
 const chart25Ref = useTemplateRef('chart25');
-const chartPrimaryRef = useTemplateRef('chartPrimary');
+// const chartPrimaryRef = useTemplateRef('chartPrimary');
 const chart21Ref = useTemplateRef('chart21');
 const containerRef = useTemplateRef('container');
 

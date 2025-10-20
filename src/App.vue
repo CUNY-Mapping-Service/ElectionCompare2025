@@ -99,6 +99,7 @@ const SETTINGS = {
         // Use d3 to scale the value to a color based on breakpoints
         const colorScale = d3.scaleThreshold()
             .domain(COLOR_SCALE.breakpoints)
+            // @ts-ignore  Type 'string' is not assignable to type 'number'
             .range(candidate.colors);
 
         return colorScale(value);
@@ -164,14 +165,6 @@ function buildFilterExpression(): any[] {
         conditions.push(['==', ['get', 'ownrent'], selectedFilters.value.ownrent]);
     }
 
-    if (conditions.length === 0) {
-        return true;
-    }
-
-    if (conditions.length === 1) {
-        return conditions[0];
-    }
-
     return ['all', ...conditions];
 }
 
@@ -235,6 +228,7 @@ onMounted(() => {
         }, 'county-outline')
 
         // Add mask layer that covers non-matching districts
+        // @ts-ignore
         map.addLayer({
             'id': 'map-mask',
             'type': 'fill',
@@ -249,6 +243,7 @@ onMounted(() => {
 
         // Watch for filter changes and update the mask layer
         watch(selectedFilters, (newFilters) => {
+            // @ts-ignore
             map.setFilter('map-mask', ['!', buildFilterExpression()]);
         }, { deep: true })
 
