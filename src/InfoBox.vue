@@ -94,6 +94,7 @@ const data21 = computed(() => {
 
 // Get winner labels
 const winner25 = computed(() => props.hoveredData?.properties.winner25 || '');
+const winprimary = computed(() => props.hoveredData?.properties.winprimary || '');
 const winner21 = computed(() => props.hoveredData?.properties.winner21 || '');
 
 // Find winner color
@@ -235,7 +236,7 @@ onMounted(() => {
             <!-- 2025 Election Chart -->
             <div class="chart-section">
                 <div class="chart-title">
-                    <h3>2025 Election</h3>
+                    <h3>2025 General</h3>
                    <p>
                      Winner: <div class="winner-pill" :style="{ backgroundColor: getWinnerColor(winner25, '2025') }">
                         {{ winner25 }}
@@ -247,12 +248,20 @@ onMounted(() => {
 
             <!-- 2025 Primary Placeholder -->
             <div class="chart-section">
+                 <div class="chart-title">
+                    <h3>Democratic Primary</h3>
+                    <p>
+                       Winner:  <div class="winner-pill" :style="{ backgroundColor: getWinnerColor(winprimary, '2025') }">
+                        {{ winprimary }}
+                    </div>
+                    </p>
+                </div>
             </div>
 
             <!-- 2021 Election Chart -->
             <div class="chart-section">
                 <div class="chart-title">
-                    <h3>2021 Election</h3>
+                    <h3>2021 General</h3>
                     <p>
                        Winner:  <div class="winner-pill" :style="{ backgroundColor: getWinnerColor(winner21, '2021') }">
                         {{ winner21 }}
