@@ -1,16 +1,21 @@
 <!-- eslint-disable @typescript-eslint/no-explicit-any -->
 
 <script setup lang="ts">
-import { AttributionControl, Map, NavigationControl } from 'maplibre-gl';
+import { AttributionControl, Map as MaplibreMap, NavigationControl } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css'
 import '@maplibre/maplibre-gl-compare/dist/maplibre-gl-compare.css'
 import { computed, onMounted, ref, watch } from 'vue';
 import { isMapboxURL, transformMapboxUrl } from './libs/mapbox-transform';
 import * as d3 from "d3";
+import { Index } from 'flexsearch';
 
 import cunygclogo from './cunygc_logo.png'
 
-import resultsRaw from './stores/results.geojson?raw';
+import NYED_GEOM from './stores/nyed25c.json';
+import FILTER_DATA from './stores/filterdata.json'
+import METADATA from './stores/metadata.json'
+import RESULTS_DATA from './stores/test25results.json'
+
 import InfoBox from './InfoBox.vue'
 import Legend from './Legend.vue';
 
@@ -21,28 +26,28 @@ const COLOR_SCALE = {
     'breakpoints': [
         5, 10, 25, 50, 75, 100
     ],
+    'total_id': 'gen25tot',
     'candidates': [
         {
-            // id must match the winerColumn (winner25) value and vote share column name + 25 (mamdani25)
-            'id': 'Mamdani',
-            // label for legend
-            'label': 'Mamdani',
+            'id': 'gen25zm',
+            // label for legend, needs to match win25
+            'label': 'Zohran Mamdani',
             // each array needs to match the length of the breakpoints
             'colors': ['#eff3ff', '#c6dbef', '#9ecae1', '#6baed6', '#3182bd', '#08519c']
         },
         {
-            'id': 'Cuomo',
-            'label': 'Cuomo',
+            'id': 'gen25ac',
+            'label': 'Andrew Cuomo',
             'colors': ['#edf8e9', '#c7e9c0', '#a1d99b', '#74c476', '#31a354', '#006d2c']
         },
         {
-            'id': 'Silwa',
-            'label': 'Silwa',
+            'id': 'gen25cs',
+            'label': 'Curtis Sliwa',
             'colors': ['#feedde', '#fdd0a2', '#fdae6b', '#fd8d3c', '#e6550d', '#a63603']
         },
         {
-            'id': 'Admas',
-            'label': 'Admas',
+            'id': 'gen25ea',
+            'label': 'Eric Adams',
             'colors': ['#f2f0f7', '#dadaeb', '#bcbddc', '#9e9ac8', '#756bb1', '#54278f']
         }
     ],
@@ -52,45 +57,33 @@ const COLOR_SCALE = {
     }
 }
 
-const DROP_DOWN_OPTIONS = { // make sure to also update selectedFilters
-    'predrace': {
-        label: 'Racial Demographics',
-        options: [
-            { value: 'AsianCombo', label: 'Asian' },
-            { value: 'BlackCombo', label: 'Black' },
-            { value: 'Hispanic', label: 'Hispanic' },
-            { value: 'Tie', label: 'Tie' },
-            { value: 'WhiteAlone', label: 'White' }
-        ]
-    },
-    'ownrent': {
-        label: 'Housing',
-        options: [
-            { value: 'OwnMajority', label: 'Owner Majority' },
-            { value: 'RentMajority', label: 'Renter Majority' }
-        ]
-    }
-}
+// Build filter options from METADATA
+const FILTER_OPTIONS = METADATA
+    .filter((item: any) => item.isFilter)
+    .map((item: any) => ({
+        column: item.column,
+        label: item.label
+    }));
 
 const SETTINGS = {
     'getColor': (d: any) => {
-        const winnerColumn = 'winner25'
+        const winnerColumn = 'win25'
         let value: number | null = null;
 
         if (d[winnerColumn] === 'Tie') {
             return '#bdbdbd';
         }
 
-        // Find the candidate
-        const candidate = COLOR_SCALE.candidates.find(c => c.id === d[winnerColumn]);
-
+        // Find the candidate column using the label
+        // win25 is "Curtis Sliwa" get gen25cs
+        const candidate = COLOR_SCALE.candidates.find(c => c.label === d[winnerColumn]);
         if (!candidate) {
             return null;
         }
 
-        // Get the vote share value
-        const valueKey = `${d[winnerColumn].toLowerCase()}25`;
-        value = d[valueKey]; // this needs to be a percent instead of a full value
+        // Get the vote share value (use percentage)
+        const percentKey = `${candidate.id}_pct`
+        value = d[percentKey];
 
         if (value === null || value === undefined) {
             return null;
@@ -104,28 +97,84 @@ const SETTINGS = {
 
         return colorScale(value);
     },
-    'promoteId': 'aded',
+    'promoteId': 'ElectDist',
 }
 
 // generate properties.data
-const results = JSON.parse(resultsRaw).features.map((d: any) => {
-    d.properties.color = SETTINGS.getColor(d.properties)
-    return d
+const FILTER_PROPERTIES = new Map(Object.entries(FILTER_DATA))
+const RESULTS_PROPERTIES = new Map(Object.entries(RESULTS_DATA))
+
+const features = NYED_GEOM.features.map((d: any) => {
+    const electDist = String(d.properties.ElectDist);
+    const filterProps = FILTER_PROPERTIES.get(electDist) || {};
+    const resultsProps = RESULTS_PROPERTIES.get(electDist) || {};
+
+    d.properties = {
+        ...d.properties,
+        ...filterProps,
+        ...resultsProps
+    };
+
+    // Calculate percentages for 2025
+    const gen25total = d.properties.gen25tot || 0;
+    if (gen25total > 0) {
+        d.properties.gen25zm_pct = ((d.properties.gen25zm || 0) / gen25total) * 100;
+        d.properties.gen25ac_pct = ((d.properties.gen25ac || 0) / gen25total) * 100;
+        d.properties.gen25cs_pct = ((d.properties.gen25cs || 0) / gen25total) * 100;
+        d.properties.gen25ea_pct = ((d.properties.gen25ea || 0) / gen25total) * 100;
+    } else {
+        d.properties.gen25zm_pct = 0;
+        d.properties.gen25ac_pct = 0;
+        d.properties.gen25cs_pct = 0;
+        d.properties.gen25ea_pct = 0;
+    }
+
+    // Calculate percentages for 2021
+    const gen21total = d.properties.gen21tot || 0;
+    if (gen21total > 0) {
+        d.properties.gen21ea_pct = ((d.properties.gen21ea || 0) / gen21total) * 100;
+        d.properties.gen21cs_pct = ((d.properties.gen21cs || 0) / gen21total) * 100;
+        d.properties.gen21othr_pct = ((d.properties.gen21othr || 0) / gen21total) * 100;
+    } else {
+        d.properties.gen21ea_pct = 0;
+        d.properties.gen21cs_pct = 0;
+        d.properties.gen21othr_pct = 0;
+    }
+
+    d.properties.color = SETTINGS.getColor(d.properties);
+    return d;
 });
 
 // state
 const hoveredId = ref<string | number | null>(null)
 const clickedId = ref<string | number | null>(null)
-const selectedFilters = ref({
-    predrace: null as string | null,
-    ownrent: null as string | null
+const selectedFilters = ref<Array<{ column: string; label: string }>>([])
+const searchQuery = ref('')
+const searchResults = ref<Array<{ column: string; label: string }>>([])
+const showSearchResults = ref(false)
+
+// Initialize FlexSearch index
+const searchIndex = new Index({
+    tokenize: 'forward',
+    cache: true
 })
+
+// Index all filter options with their labels and keyterms
+FILTER_OPTIONS.forEach((option: any, index: number) => {
+    const metadata = METADATA.find((m: any) => m.column === option.column)
+    const keyterms = metadata?.keyterms || []
+
+    // Combine label and keyterms for comprehensive search
+    const searchText = [option.label, ...keyterms].join(' ')
+    searchIndex.add(index, searchText)
+})
+
 const activeId = computed(() => clickedId.value ?? hoveredId.value)
 const hoveredData = computed(() => {
     if (!activeId.value) return null;
 
     // Find the feature with the matching ID
-    const feature = results.find((f: any) => f.properties[SETTINGS.promoteId] === activeId.value);
+    const feature = features.find((f: any) => f.properties[SETTINGS.promoteId] === activeId.value);
 
     if (!feature) return null;
 
@@ -135,18 +184,68 @@ const hoveredData = computed(() => {
     };
 })
 
+// Compute filtered districts based on selected filters
+const filteredDistricts = computed(() => {
+    if (selectedFilters.value.length === 0) {
+        return [];
+    }
+
+    return features.filter((feature: any) => {
+        // Check if feature matches all selected filters
+        return selectedFilters.value.every(filter => {
+            return feature.properties[filter.column] === 1;
+        });
+    });
+})
+
 function clearClickedId() {
     clickedId.value = null;
+    hoveredId.value = null;
 }
 
 function clearFilters() {
-    selectedFilters.value = {
-        predrace: null,
-        ownrent: null
-    }
+    selectedFilters.value = []
 }
 
-// helpers and listeners
+function addFilter(filter: { column: string; label: string }) {
+    // Check if filter already exists
+    const exists = selectedFilters.value.some(f => f.column === filter.column)
+    if (!exists) {
+        selectedFilters.value.push(filter)
+    }
+    // Clear search
+    searchQuery.value = ''
+    searchResults.value = []
+    showSearchResults.value = false
+}
+
+function removeFilter(column: string) {
+    selectedFilters.value = selectedFilters.value.filter(f => f.column !== column)
+}
+
+function performSearch() {
+    if (!searchQuery.value.trim()) {
+        // Show all results when query is empty
+        searchResults.value = FILTER_OPTIONS
+        showSearchResults.value = true
+        return
+    }
+    const results = searchIndex.search(searchQuery.value)
+    searchResults.value = results.map((index: any) => FILTER_OPTIONS[index])
+    showSearchResults.value = true
+}
+
+function handleBlur() {
+    window.setTimeout(() => {
+        showSearchResults.value = false
+    }, 200)
+}
+
+// Watch search query
+watch(searchQuery, () => {
+    performSearch()
+})
+
 function transformRequest(url: string, resourceType: string) {
     if (isMapboxURL(url)) {
         return transformMapboxUrl(url, resourceType ?? 'Unknown', MAPBOX_KEY)
@@ -155,22 +254,21 @@ function transformRequest(url: string, resourceType: string) {
 }
 
 function buildFilterExpression(): any[] {
-    const conditions = [];
-
-    if (selectedFilters.value.predrace) {
-        conditions.push(['==', ['get', 'predrace'], selectedFilters.value.predrace]);
+    if (selectedFilters.value.length === 0) {
+        return ['all']
     }
 
-    if (selectedFilters.value.ownrent) {
-        conditions.push(['==', ['get', 'ownrent'], selectedFilters.value.ownrent]);
-    }
+    const conditions = selectedFilters.value.map(filter => {
+        // All filter columns in METADATA are boolean (0 or 1)
+        return ['==', ['get', filter.column], 1]
+    })
 
     return ['all', ...conditions];
 }
 
 onMounted(() => {
     // Init map adnd add json layer
-    const map = new Map({
+    const map = new MaplibreMap({
         container: "map",
         style: MAPBOX_STYLE_URL,
         //@ts-expect-error Type 'maplibregl.ResourceType | undefined' is not assignable to type 'string'
@@ -192,7 +290,7 @@ onMounted(() => {
         // Add data and styles
         map.addSource('map-source', {
             type: 'geojson',
-            data: { "type": "FeatureCollection", features: results },
+            data: { "type": "FeatureCollection", features: features },
             promoteId: SETTINGS.promoteId
         })
 
@@ -328,29 +426,49 @@ onMounted(() => {
             <h2>NYC 2025 General Election: Mayor</h2>
             <h3>Vote share by election district</h3>
             <Legend :COLOR_SCALE="COLOR_SCALE"></Legend>
-            
+
             <div class="filters-section">
-                <div v-for="(filterConfig, filterKey) in DROP_DOWN_OPTIONS" :key="filterKey" class="filter-group">
-                    <label :for="`${filterKey}-select`">{{ filterConfig.label }}:</label>
-                    <select :id="`${filterKey}-select`" v-model="selectedFilters[filterKey]" class="filter-select">
-                        <option :value="null">All</option>
-                        <option v-for="option in filterConfig.options" :key="option.value" :value="option.value">
-                            {{ option.label }}
-                        </option>
-                    </select>
+                <label for="filter-search">Filter Election Districts:</label>
+                <div class="search-container">
+                    <input type="text" v-model="searchQuery" placeholder="Search filters (e.g., 'renters', 'income')..."
+                        class="filter-search" @focus="performSearch()" @blur="handleBlur" />
+
+                    <div v-if="showSearchResults && searchResults.length > 0" class="search-results">
+                        <div v-for="result in searchResults" :key="result.column" class="search-result-item"
+                            @click="addFilter(result)">
+                            {{ result.label }}
+                        </div>
+                    </div>
+
+                    <div v-if="showSearchResults && searchQuery && searchResults.length === 0" class="search-results">
+                        <div class="search-result-item no-results">
+                            No filters found
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="selectedFilters.length > 0" class="selected-filters">
+                    <div v-for="filter in selectedFilters" :key="filter.column" class="filter-pill">
+                        <span class="filter-pill-text">{{ filter.label }}</span>
+                        <button @click="removeFilter(filter.column)" class="filter-pill-close"
+                            aria-label="Remove filter">
+                            ×
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <div class="button-group">
-                <button v-if="selectedFilters.predrace || selectedFilters.ownrent" @click="clearFilters" class="clear-button">
-                    Clear Filters
+                <button v-if="selectedFilters.length > 0" @click="clearFilters" class="clear-button">
+                    Clear All Filters
                 </button>
-                    <button v-if="clickedId" @click="clearClickedId" class="clear-button">
+                <button v-if="clickedId" @click="clearClickedId" class="clear-button">
                     Clear Selection
                 </button>
             </div>
         </div>
-        <InfoBox :hoveredData="hoveredData" :COLOR_SCALE="COLOR_SCALE" :idKey="SETTINGS.promoteId" />
+        <InfoBox :hoveredData="hoveredData" :COLOR_SCALE="COLOR_SCALE" :idKey="SETTINGS.promoteId"
+            :filteredFeatures="filteredDistricts" @close="clearClickedId" />
         <div id="map" class="map"></div>
     </div>
 </template>
@@ -399,6 +517,120 @@ body {
     padding: 0.5rem 0;
     border-top: 1px solid #ddd;
     border-bottom: 1px solid #ddd;
+}
+
+.filters-section label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.search-container {
+    position: relative;
+}
+
+.filter-search {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #999;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    background-color: white;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.filter-search:hover {
+    border-color: #666;
+}
+
+.filter-search:focus {
+    outline: none;
+    border-color: #0066cc;
+    box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+}
+
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-top: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+}
+
+.search-result-item {
+    padding: 0.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background-color 0.15s;
+}
+
+.search-result-item:hover {
+    background-color: #f0f0f0;
+}
+
+.search-result-item.no-results {
+    color: #666;
+    cursor: default;
+    font-style: italic;
+}
+
+.search-result-item.no-results:hover {
+    background-color: white;
+}
+
+.selected-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: gray;
+    color: white;
+    padding: 0.1rem 0.75rem;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.filter-pill-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: wrap;
+}
+
+.filter-pill-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.15s;
+}
+
+.filter-pill-close:hover {
+    background-color: rgba(255, 255, 255, 0.2);
 }
 
 .filter-group {

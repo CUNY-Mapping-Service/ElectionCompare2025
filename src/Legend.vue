@@ -6,37 +6,43 @@ const isExpanded = ref(true)
 
 // Generate legend items from breakpoints and colors for a given candidate
 function getLegendItems(colors: string[]) {
-  return COLOR_SCALE.breakpoints.map((breakpoint: number, index: number) => {
-    const nextBreakpoint = COLOR_SCALE.breakpoints[index + 1];
-    const label = nextBreakpoint 
-      ? `${breakpoint} – ${nextBreakpoint}` 
-      : `${breakpoint}%`;
-    
-    return {
-      label,
-      color: colors[index]
-    };
-  });
+    return COLOR_SCALE.breakpoints.map((breakpoint: number, index: number) => {
+        const nextBreakpoint = COLOR_SCALE.breakpoints[index + 1];
+        const label = nextBreakpoint
+            ? `${breakpoint} – ${nextBreakpoint}`
+            : `${breakpoint}%`;
+
+        return {
+            label,
+            color: colors[index]
+        };
+    });
 }
 </script>
 
 <template>
     <div class="legend-container">
-        <button class="toggle-btn" @click="isExpanded = !isExpanded" :aria-expanded="isExpanded">
+        <!-- <button class="toggle-btn" @click="isExpanded = !isExpanded" :aria-expanded="isExpanded">
             <span class="toggle-icon">{{ isExpanded ? '▼' : '▶' }}</span>
             <span class="toggle-label">Legend</span>
-        </button>
-        
-        <div v-show="isExpanded" class="legend">
-            <div v-for="candidate in COLOR_SCALE.candidates" :key="candidate.id" class="candidate-legend">
-                <h3 class="candidate-label">{{ candidate.label }}</h3>
-                <div class="breakpoint" v-for="(item, index) in getLegendItems(candidate.colors)" :key="index">
+        </button> -->
+
+        <div class="legend">
+            <div v-for="candidate in COLOR_SCALE.candidates" :key="candidate.id" class="candidate">
+                <h3 class="candidate-label">{{ candidate.label.split(' ')[1] }}</h3>
+                <div v-for="(item, index) in getLegendItems(candidate.colors)" :key="index">
                     <span class="swatch" :style="`background-color: ${item.color}`"></span>
+                </div>
+            </div>
+            <div class="candidate" style="width: auto;">
+                <h3 class="candidate-label">‎</h3>
+                <div class="breakpoint" v-for="(item, index) in getLegendItems(COLOR_SCALE.candidates[0].colors)"
+                    :key="index">
                     <p>{{ item.label }}</p>
                 </div>
             </div>
         </div>
-        
+
         <p class="subtitle">Blank areas = no votes and/or no population</p>
     </div>
 </template>
@@ -73,21 +79,27 @@ function getLegendItems(colors: string[]) {
 }
 
 .legend {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-top: 0.5rem;
+    display: flex;
+    gap: 2px;
+    margin-top: 2rem;
 }
 
-.candidate-legend {
-    display: flex;
-    flex-direction: column;
+.candidate {
+    width: 1.1rem;
 }
 
 .candidate-label {
     margin: 0;
     font-size: 1rem;
     font-weight: 600;
+    transform: rotate(-50deg);
+}
+
+.swatch {
+    display: block;
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
 }
 
 .breakpoint {
@@ -102,13 +114,6 @@ function getLegendItems(colors: string[]) {
     margin-top: 0;
     line-height: 1.1;
     font-size: 0.9rem;
-}
-
-.swatch {
-    display: block;
-    width: 1rem;
-    height: 1rem;
-    flex-shrink: 0;
 }
 
 .subtitle {

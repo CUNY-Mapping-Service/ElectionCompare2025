@@ -18,6 +18,7 @@
     "@maplibre/maplibre-gl-compare": "^0.5.0",
     "d3": "^7.9.0",
     "events": "^3.3.0",
+    "flexsearch": "^0.8.212",
     "maplibre-gl": "^5.9.0",
     "vue": "^3.5.22"
   },

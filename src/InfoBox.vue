@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
+import { computed, onMounted, ref, useTemplateRef, watch, nextTick } from 'vue';
 import * as d3 from 'd3';
 
 interface FeatureProperties {
@@ -13,9 +13,13 @@ interface Props {
     } | null;
     COLOR_SCALE: any;
     idKey: string;
+    filteredFeatures?: any[]; // Array of all filtered district features
 }
 
 const props = defineProps<Props>();
+const emit = defineEmits<{
+    close: []
+}>();
 
 const edLabel = computed(() => {
     const id = props.hoveredData?.properties[props.idKey]
@@ -27,75 +31,136 @@ const edLabel = computed(() => {
     return ''
 })
 
-const isVisible = computed(() => props.hoveredData !== null);
+const isVisible = computed(() => props.hoveredData !== null || hasFilteredData.value);
+const hasFilteredData = computed(() => props.filteredFeatures && props.filteredFeatures.length > 0);
+
+// Mobile tab state
+const activeTab = ref<'aggregate' | 'ed'>('aggregate');
 
 // Chart refs
 const chart25Ref = useTemplateRef('chart25');
-// const chartPrimaryRef = useTemplateRef('chartPrimary');
 const chart21Ref = useTemplateRef('chart21');
+const aggChart25Ref = useTemplateRef('aggChart25');
+const aggChart21Ref = useTemplateRef('aggChart21');
 const containerRef = useTemplateRef('container');
 
 // Track container width for responsive sizing
 const containerWidth = ref(320);
+const isMobile = ref(false);
 
-// Prepare data for 2025 election
+// Aggregate data computation for filtered districts
+const aggregateData25 = computed(() => {
+    if (!hasFilteredData.value) return [];
+
+    const candidates = props.COLOR_SCALE.candidates;
+    const totals: { [key: string]: { votes: number, name: string, color: string } } = {};
+
+    candidates.forEach((c: any) => {
+        totals[c.id] = { votes: 0, name: c.label, color: c.colors[4] };
+    });
+
+    props.filteredFeatures!.forEach(feature => {
+        candidates.forEach((c: any) => {
+            totals[c.id].votes += feature.properties[c.id] || 0;
+        });
+    });
+
+    const totalVotes = Object.values(totals).reduce((sum, c) => sum + c.votes, 0);
+
+    return Object.values(totals)
+        .map(c => ({
+            name: c.name,
+            votes: c.votes,
+            percentage: totalVotes > 0 ? (c.votes / totalVotes) * 100 : 0,
+            color: c.color
+        }))
+        .filter(d => d.votes > 0);
+});
+
+const aggregateData21 = computed(() => {
+    if (!hasFilteredData.value) return [];
+
+    const totals = {
+        ea: { votes: 0, name: 'Eric Adams', color: props.COLOR_SCALE.candidates[3].colors[4] },
+        cs: { votes: 0, name: 'Curtis Sliwa', color: props.COLOR_SCALE.candidates[2].colors[4] },
+        other: { votes: 0, name: 'Other', color: props.COLOR_SCALE.other.colors[4] }
+    };
+
+    props.filteredFeatures!.forEach(feature => {
+        totals.ea.votes += feature.properties.gen21ea || 0;
+        totals.cs.votes += feature.properties.gen21cs || 0;
+        totals.other.votes += feature.properties.gen21othr || 0;
+    });
+
+    const totalVotes = Object.values(totals).reduce((sum, c) => sum + c.votes, 0);
+
+    return Object.values(totals)
+        .map(c => ({
+            name: c.name,
+            votes: c.votes,
+            percentage: totalVotes > 0 ? (c.votes / totalVotes) * 100 : 0,
+            color: c.color
+        }))
+        .filter(d => d.votes > 0);
+});
+
+// Prepare data for 2025 election - using percentage data
 const data25 = computed(() => {
     if (!props.hoveredData) return [];
-    
+
     const candidates = props.COLOR_SCALE.candidates;
-    const total = candidates.reduce((sum: number, c: any) => {
-        return sum + (props.hoveredData!.properties[`${c.id.toLowerCase()}25`] || 0);
-    }, 0);
 
     return candidates
         .map((c: any) => ({
             name: c.label,
-            votes: props.hoveredData!.properties[`${c.id.toLowerCase()}25`] || 0,
+            percentage: props.hoveredData!.properties[`${c.id}_pct`] || 0,
+            votes: props.hoveredData!.properties[c.id] || 0,
             color: c.colors[4],
         }))
-        .filter((d: any) => d.votes > 0)
-        .map((d: any) => ({
-            ...d,
-            percentage: total > 0 ? (d.votes / total) * 100 : 0
-        }));
+        .filter((d: any) => d.votes > 0);
 });
 
-// Prepare data for 2021 election
+// Prepare data for 2021 election - using percentage data
 const data21 = computed(() => {
     if (!props.hoveredData) return [];
-    
-    const total = (props.hoveredData.properties.adams21 || 0) + 
-                  (props.hoveredData.properties.sliwa21 || 0) + 
-                  (props.hoveredData.properties.other21 || 0);
 
     return [
         {
-            name: 'Adams',
-            votes: props.hoveredData.properties.adams21 || 0,
+            name: 'Eric Adams',
+            percentage: props.hoveredData.properties.gen21ea_pct || 0,
+            votes: props.hoveredData.properties.gen21ea || 0,
             color: props.COLOR_SCALE.candidates[3].colors[4],
         },
         {
-            name: 'Sliwa',
-            votes: props.hoveredData.properties.sliwa21 || 0,
+            name: 'Curtis Sliwa',
+            percentage: props.hoveredData.properties.gen21cs_pct || 0,
+            votes: props.hoveredData.properties.gen21cs || 0,
             color: props.COLOR_SCALE.candidates[2].colors[4],
         },
         {
             name: 'Other',
-            votes: props.hoveredData.properties.other21 || 0,
+            percentage: props.hoveredData.properties.gen21othr_pct || 0,
+            votes: props.hoveredData.properties.gen21othr || 0,
             color: props.COLOR_SCALE.other.colors[4],
         }
     ]
-    .filter((d: any) => d.votes > 0)
-    .map((d: any) => ({
-        ...d,
-        percentage: total > 0 ? (d.votes / total) * 100 : 0
-    }))
+        .filter((d: any) => d.votes > 0);
 });
 
 // Get winner labels
-const winner25 = computed(() => props.hoveredData?.properties.winner25 || '');
-const winprimary = computed(() => props.hoveredData?.properties.winprimary || '');
-const winner21 = computed(() => props.hoveredData?.properties.winner21 || '');
+const winner25 = computed(() => props.hoveredData?.properties.win25 || '');
+const winner21 = computed(() => props.hoveredData?.properties.win21 || '');
+
+// Get aggregate winners
+const aggregateWinner25 = computed(() => {
+    if (aggregateData25.value.length === 0) return '';
+    return aggregateData25.value.reduce((a, b) => a.votes > b.votes ? a : b).name;
+});
+
+const aggregateWinner21 = computed(() => {
+    if (aggregateData21.value.length === 0) return '';
+    return aggregateData21.value.reduce((a, b) => a.votes > b.votes ? a : b).name;
+});
 
 // Find winner color
 const getWinnerColor = (winner: string, year: string) => {
@@ -103,8 +168,8 @@ const getWinnerColor = (winner: string, year: string) => {
         const candidate = props.COLOR_SCALE.candidates.find((c: any) => c.label === winner);
         return candidate?.colors[4] || '#999';
     } else {
-        if (winner === 'Adams') return props.COLOR_SCALE.candidates[3].colors[4];
-        if (winner === 'Sliwa') return props.COLOR_SCALE.candidates[2].colors[4];
+        if (winner === 'Eric Adams') return props.COLOR_SCALE.candidates[3].colors[4];
+        if (winner === 'Curtis Sliwa') return props.COLOR_SCALE.candidates[2].colors[4];
         return '#999';
     }
 };
@@ -126,7 +191,7 @@ const drawStackedChart = (ref: any, data: any[], year: string, winner: string) =
         .append('g')
         .attr('transform', `translate(${margin.left},${margin.top})`);
 
-    // Calculate cumulative positions
+    // Calculate cumulative positions using percentages
     const total = d3.sum(data, (d: any) => d.percentage);
     let cumulativePosition = 0;
     const segments = data.map((d: any) => {
@@ -157,7 +222,7 @@ const drawStackedChart = (ref: any, data: any[], year: string, winner: string) =
 
     // Labels on bar
     svg.selectAll('.bar-label')
-        .data(segments.filter(d => d.name !== 'Other' || d.percentage >= 10))
+        .data(segments.filter(d => d.percentage >= 5))
         .enter()
         .append('text')
         .attr('class', 'bar-label')
@@ -170,7 +235,7 @@ const drawStackedChart = (ref: any, data: any[], year: string, winner: string) =
         .attr('fill', '#000')
         .text((d: any) => `${d.percentage.toFixed(1)}%`);
 
-    // Legend below bar
+    // Legend below bar - showing both percentage and vote count
     const legendY = 60;
     const legendData = data;
     svg.selectAll('.legend-item')
@@ -179,19 +244,21 @@ const drawStackedChart = (ref: any, data: any[], year: string, winner: string) =
         .append('g')
         .attr('class', 'legend-item')
         .attr('transform', (d: any, i: number) => `translate(${(width / legendData.length) * i}, ${legendY})`)
-        .each(function(d: any) {
+        .each(function (d: any) {
             d3.select(this)
                 .append('text')
                 .attr('font-size', '11px')
                 .attr('font-weight', '500')
-                .text(`${d.name}: ${d.votes.toLocaleString()}`);
+                .text(`${d?.name?.split(' ')[1] ?? 'Other'} (${Math.round(d.votes).toLocaleString()})`);
         });
 };
 
 // Update container width on mount and window resize
 const updateContainerWidth = () => {
     if (containerRef.value) {
-        containerWidth.value = (containerRef.value as HTMLElement).offsetWidth - 30; // 30 for padding
+        const element = containerRef.value as HTMLElement;
+        containerWidth.value = element.offsetWidth - 30; // 30 for padding
+        isMobile.value = window.innerWidth <= 600;
     }
 };
 
@@ -204,71 +271,167 @@ const debounce = (func: () => void, wait: number) => {
     };
 };
 
+// Redraw all charts
+const redrawCharts = () => {
+    updateContainerWidth();
+
+    // ED charts
+    if (chart25Ref.value && data25.value.length > 0) {
+        drawStackedChart(chart25Ref.value, data25.value, '2025', winner25.value);
+    }
+    if (chart21Ref.value && data21.value.length > 0) {
+        drawStackedChart(chart21Ref.value, data21.value, '2021', winner21.value);
+    }
+
+    // Aggregate charts
+    if (hasFilteredData.value) {
+        if (aggChart25Ref.value && aggregateData25.value.length > 0) {
+            drawStackedChart(aggChart25Ref.value, aggregateData25.value, '2025', aggregateWinner25.value);
+        }
+        if (aggChart21Ref.value && aggregateData21.value.length > 0) {
+            drawStackedChart(aggChart21Ref.value, aggregateData21.value, '2021', aggregateWinner21.value);
+        }
+    }
+};
+
 onMounted(() => {
     updateContainerWidth();
-    
+
     // Debounced resize handler
-    const debouncedResize = debounce(updateContainerWidth, 100);
+    const debouncedResize = debounce(() => {
+        redrawCharts();
+    }, 100);
+
     window.addEventListener('resize', debouncedResize);
 
-    watch([data25, data21, containerWidth], () => {
-        if (chart25Ref.value && data25.value.length > 0) {
-            drawStackedChart(chart25Ref.value, data25.value, '2025', winner25.value);
-        }
-        if (chart21Ref.value && data21.value.length > 0) {
-            drawStackedChart(chart21Ref.value, data21.value, '2021', winner21.value);
-        }
-    }, { immediate: true });
-
+    // Cleanup
     return () => {
         window.removeEventListener('resize', debouncedResize);
     };
+});
+
+watch([data25, data21, aggregateData25, aggregateData21, containerWidth, isVisible, activeTab], () => {
+    if (!isVisible.value) return;
+
+    // Wait a tick 
+    requestAnimationFrame(() => {
+        redrawCharts();
+    });
+}, { immediate: true });
+
+// Switch to ED tab on mobile when user hovers/clicks a district (only when filters are active)
+watch([() => props.hoveredData, isMobile, hasFilteredData], async () => {
+    // Only manage tab switching when filters are active
+    if (!hasFilteredData.value) return;
+
+    if (isMobile.value && props.hoveredData) {
+        await nextTick();
+        activeTab.value = 'ed';
+    } else if (!props.hoveredData) {
+        activeTab.value = 'aggregate';
+    }
 });
 </script>
 
 <template>
     <div ref="container" class="infobox-container" v-if="isVisible">
         <div class="header">
-            <h3>{{ edLabel }}</h3>
+            <div class="header-content">
+                <div>
+                    <h3>{{ hasFilteredData && !hoveredData ? 'Filtered Districts' : (hasFilteredData ? edLabel :
+                        edLabel) }}</h3>
+                    <p v-if="hasFilteredData" class="filter-count">{{ filteredFeatures?.length }} districts selected</p>
+                </div>
+                <button class="close-button" @click="emit('close')" aria-label="Close">
+                    ×
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Tab Navigation -->
+        <div v-if="isMobile && hasFilteredData && hoveredData" class="tab-nav">
+            <button class="tab-button" :class="{ active: activeTab === 'aggregate' }" @click="activeTab = 'aggregate'">
+                All Filtered
+            </button>
+            <button class="tab-button" :class="{ active: activeTab === 'ed' }" @click="activeTab = 'ed'">
+                {{ edLabel }}
+            </button>
         </div>
 
         <div class="charts-wrapper">
-            <!-- 2025 Election Chart -->
-            <div class="chart-section">
-                <div class="chart-title">
-                    <h3>2025 General</h3>
-                   <p>
-                     Winner: <div class="winner-pill" :style="{ backgroundColor: getWinnerColor(winner25, '2025') }">
-                        {{ winner25 }}
-                    </div>
-                   </p>
-                </div>
-                <div ref="chart25"></div>
-            </div>
-
-            <!-- 2025 Primary Placeholder -->
-            <div class="chart-section">
-                 <div class="chart-title">
-                    <h3>Democratic Primary</h3>
-                    <p>
-                       Winner:  <div class="winner-pill" :style="{ backgroundColor: getWinnerColor(winprimary, '2025') }">
-                        {{ winprimary }}
-                    </div>
+            <!-- Aggregate Charts (Desktop: always show if filtered, Mobile: show only when active tab or when no hoveredData) -->
+            <div v-if="hasFilteredData && (!isMobile || activeTab === 'aggregate' || !hoveredData)"
+                class="aggregate-section">
+                <div class="section-header">
+                    <h2>Aggregate Results</h2>
+                    <p class="section-subtitle">Combined results from {{ filteredFeatures?.length }} filtered districts
                     </p>
                 </div>
+
+                <!-- 2025 Aggregate -->
+                <div class="chart-section">
+                    <div class="chart-title">
+                        <h3>2025 General</h3>
+                        <p>
+                            Winner: <span class="winner-pill"
+                                :style="{ backgroundColor: getWinnerColor(aggregateWinner25, '2025') }">
+                                {{ aggregateWinner25 }}
+                            </span>
+                        </p>
+                    </div>
+                    <div ref="aggChart25"></div>
+                </div>
+
+                <!-- 2021 Aggregate -->
+                <div class="chart-section">
+                    <div class="chart-title">
+                        <h3>2021 General</h3>
+                        <p>
+                            Winner: <span class="winner-pill"
+                                :style="{ backgroundColor: getWinnerColor(aggregateWinner21, '2021') }">
+                                {{ aggregateWinner21 }}
+                            </span>
+                        </p>
+                    </div>
+                    <div ref="aggChart21"></div>
+                </div>
+
+                <div v-if="!isMobile" class="divider"></div>
             </div>
 
-            <!-- 2021 Election Chart -->
-            <div class="chart-section">
-                <div class="chart-title">
-                    <h3>2021 General</h3>
-                    <p>
-                       Winner:  <div class="winner-pill" :style="{ backgroundColor: getWinnerColor(winner21, '2021') }">
-                        {{ winner21 }}
-                    </div>
-                    </p>
+            <!-- Individual ED Charts (Desktop: always show when hoveredData exists, Mobile: show when active tab OR when no filters) -->
+            <div v-if="hoveredData && (!isMobile || activeTab === 'ed' || !hasFilteredData)" class="ed-section">
+                <div v-if="hasFilteredData && !isMobile" class="section-header">
+                    <h2>{{ edLabel }}</h2>
                 </div>
-                <div ref="chart21"></div>
+
+                <!-- 2025 Election Chart -->
+                <div class="chart-section">
+                    <div class="chart-title">
+                        <h3>2025 General</h3>
+                        <p>
+                            Winner: <span class="winner-pill"
+                                :style="{ backgroundColor: getWinnerColor(winner25, '2025') }">
+                                {{ winner25 }}
+                            </span>
+                        </p>
+                    </div>
+                    <div ref="chart25"></div>
+                </div>
+
+                <!-- 2021 Election Chart -->
+                <div class="chart-section">
+                    <div class="chart-title">
+                        <h3>2021 General</h3>
+                        <p>
+                            Winner: <span class="winner-pill"
+                                :style="{ backgroundColor: getWinnerColor(winner21, '2021') }">
+                                {{ winner21 }}
+                            </span>
+                        </p>
+                    </div>
+                    <div ref="chart21"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -284,7 +447,7 @@ onMounted(() => {
     box-shadow: 2px 2px 5px rgba(94, 94, 94, 0.76);
     padding: 15px;
     border-radius: 4px;
-    min-width: 200px;
+    min-width: 50%;
     max-width: 400px;
 }
 
@@ -294,16 +457,118 @@ onMounted(() => {
     padding-bottom: 10px;
 }
 
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
 .header h3 {
     margin: 0;
     font-size: 16px;
     font-weight: 600;
 }
 
+.close-button {
+    background: none;
+    border: none;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    color: #666;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.close-button:hover {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.close-button:active {
+    background-color: #e0e0e0;
+}
+
+.filter-count {
+    margin: 4px 0 0 0;
+    font-size: 12px;
+    color: #666;
+}
+
+.tab-nav {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    margin-bottom: -2px;
+}
+
+.tab-button:hover {
+    color: #333;
+    background-color: #f8f9fa;
+}
+
+.tab-button.active {
+    color: #007bff;
+    border-bottom-color: #007bff;
+}
+
 .charts-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 1rem
+    gap: 1.5rem;
+}
+
+.aggregate-section,
+.ed-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.section-header {
+    margin-bottom: 0.5rem;
+}
+
+.section-header h2 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+}
+
+.section-subtitle {
+    margin: 4px 0 0 0;
+    font-size: 12px;
+    color: #666;
+    font-style: italic;
+}
+
+.divider {
+    height: 2px;
+    background: linear-gradient(to right, #dee2e6, transparent);
+    margin: 0.5rem 0;
 }
 
 .chart-section {
@@ -326,11 +591,14 @@ onMounted(() => {
 
 .chart-title p {
     margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .winner-pill {
     display: inline-block;
-    padding: 0px 8px;
+    padding: 2px 8px;
     border-radius: 8px;
     font-size: 12px;
     font-weight: 600;
@@ -361,6 +629,28 @@ onMounted(() => {
         max-width: 90vw;
         left: 5px;
         right: 5px;
+    }
+
+    .header h3 {
+        font-size: 14px;
+    }
+
+    .chart-title {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .chart-title h3 {
+        font-size: 13px;
+    }
+
+    .chart-title p {
+        font-size: 12px;
+    }
+
+    .section-header h2 {
+        font-size: 14px;
     }
 }
 </style>

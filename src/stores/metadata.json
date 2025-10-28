@@ -1,0 +1,145 @@
+[
+  {
+    "column": "gen21tot",
+    "label": "Total mayoral votes in 2021 allocated to 2025 election districts",
+    "isFilter": false,
+    "keyterms": []
+  },
+  {
+    "column": "gen21ea",
+    "label": "Eric Adams votes in 2021 allocated to 2025 election districts",
+    "isFilter": false,
+    "keyterms": []
+  },
+  {
+    "column": "gen21cs",
+    "label": "Curtis Sliwa votes in 2021 allocated to 2025 election districts",
+    "isFilter": false,
+    "keyterms": []
+  },
+  {
+    "column": "gen21othr",
+    "label": "Other candidate votes in 2021 allocated to 2025 election districts",
+    "isFilter": false,
+    "keyterms": []
+  },
+  {
+    "column": "win21",
+    "label": "Name of candidate with most 2021 allocated votes per election district",
+    "isFilter": false,
+    "keyterms": []
+  },
+  {
+    "column": "rvtot25",
+    "label": "Total registered voters as of July 2025",
+    "isFilter": false,
+    "keyterms": []
+  },
+  {
+    "column": "rvactive725",
+    "label": "Active registered voters (voted in general in last 8 years or registered in 2024 or 2025)",
+    "isFilter": false
+  },
+  {
+    "column": "rvhisp",
+    "label": "One-third or more of active registered voters w/Hispanic surname",
+    "isFilter": true,
+    "keyterms": ["hispanic", "latino", "latina", "latinx", "spanish", "surname", "name"]
+  },
+  {
+    "column": "rvjwsh",
+    "label": "10% or more of active registered voters w/Jewish surname",
+    "isFilter": true,
+    "keyterms": ["jewish", "jew", "judaism", "surname", "religious"]
+  },
+  {
+    "column": "rvirit",
+    "label": "6% or more active registered voters w/Irish or Italian surname (Catholic proxy)",
+    "isFilter": true,
+    "keyterms": ["irish", "italian", "catholic", "surname", "religious", "european"]
+  },
+  {
+    "column": "rvmslm",
+    "label": "8% or more active registered voters w/Muslim surname",
+    "isFilter": true,
+    "keyterms": ["muslim", "islam", "islamic", "surname", "religious"]
+  },
+  {
+    "column": "rvchns",
+    "label": "8% or more active registered voters w/Chinese surname",
+    "isFilter": true,
+    "keyterms": ["chinese", "china", "asian", "surname"]
+  },
+  {
+    "column": "rvgopnop",
+    "label": "40% or more active registered voters enrolled as GOP or no party",
+    "isFilter": true,
+    "keyterms": ["republican", "gop", "conservative", "independent", "no party", "unaffiliated", "nonpartisan"]
+  },
+  {
+    "column": "cvapnhw",
+    "label": "Non-Hispanic white share of citizens of voting age (CVAP) of census block group that encloses the election district",
+    "isFilter": true,
+    "keyterms": ["white", "caucasian", "non-hispanic white", "demographic", "race", "racial"]
+  },
+  {
+    "column": "cvapblack",
+    "label": "Black share of block group CVAP",
+    "isFilter": true,
+    "keyterms": ["black", "african american", "african-american", "demographic", "race", "racial"]
+  },
+  {
+    "column": "cvaphisp",
+    "label": "Hispanic share of block group CVAP",
+    "isFilter": true,
+    "keyterms": ["hispanic", "latino", "latina", "latinx", "spanish", "demographic", "race", "racial", "ethnicity"]
+  },
+  {
+    "column": "cvapasian",
+    "label": "Asian share of block group CVAP",
+    "isFilter": true,
+    "keyterms": ["asian", "asian american", "pacific islander", "demographic", "race", "racial"]
+  },
+  {
+    "column": "acsbaplus",
+    "label": "50% or more of adults age 25+ with bachelor's degree or higher",
+    "isFilter": true,
+    "keyterms": ["education", "educated", "college", "degree", "bachelor", "university", "graduate", "higher education"]
+  },
+  {
+    "column": "acsmedinc125",
+    "label": "Median household income $125,000 or higher",
+    "isFilter": true,
+    "keyterms": ["income", "wealthy", "rich", "affluent", "high income", "earnings", "salary", "money"]
+  },
+  {
+    "column": "acsmedinc45",
+    "label": "Median household income $45,000 or less (but greater than $0)",
+    "isFilter": true,
+    "keyterms": ["income", "low income", "poor", "poverty", "working class", "earnings", "salary", "money"]
+  },
+  {
+    "column": "ascown",
+    "label": "50% or more owners",
+    "isFilter": true,
+    "keyterms": ["homeowner", "owner", "homeownership", "property owner", "housing", "home"]
+  },
+  {
+    "column": "ascrent",
+    "label": "50% or more renters",
+    "isFilter": true,
+    "keyterms": ["renter", "tenant", "rental", "apartment", "housing"]
+  },
+  {
+    "column": "cvapyouth",
+    "label": "Youth (18-29) share of CVAP for census tract that encloses the election district",
+    "isFilter": true,
+    "keyterms": ["youth", "young", "millennial", "gen z", "18-29", "age", "demographic"]
+  },
+  {
+    "column": "cvapsenior",
+    "label": "Senior (65+) share of tract CVAP",
+    "isFilter": true,
+    "keyterms": ["senior", "elderly", "old", "older", "65+", "age", "demographic", "retirement", "retiree"]
+  }
+]
