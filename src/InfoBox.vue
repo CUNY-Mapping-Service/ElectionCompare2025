@@ -445,7 +445,7 @@ watch([() => props.hoveredData, isMobile, hasFilteredData], async () => {
     position: absolute;
     right: 5px;
     bottom: 5px;
-    z-index: 99;
+    z-index: 2;
     background-color: white;
     box-shadow: 2px 2px 5px rgba(94, 94, 94, 0.76);
     padding: 15px;

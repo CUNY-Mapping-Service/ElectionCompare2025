@@ -487,7 +487,7 @@ body {
 
 .top-overlay {
     position: absolute;
-    z-index: 2;
+    z-index: 3;
     background-color: white;
     padding: 0.5rem;
     border-radius: 5px;
