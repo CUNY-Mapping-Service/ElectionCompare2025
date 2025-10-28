@@ -231,7 +231,7 @@ function performSearch() {
         return
     }
     const results = searchIndex.search(searchQuery.value)
-    searchResults.value = results.map((index: any) => FILTER_OPTIONS[index])
+    searchResults.value = results.map((index: any) => FILTER_OPTIONS[index]).filter(Boolean) as Array<{ column: string; label: string }>
     showSearchResults.value = true
 }
 
