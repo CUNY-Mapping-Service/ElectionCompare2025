@@ -61,7 +61,10 @@ const aggregateData25 = computed(() => {
 
     props.filteredFeatures!.forEach(feature => {
         candidates.forEach((c: any) => {
-            totals[c.id].votes += feature.properties[c.id] || 0;
+            if (totals[c.id]) {
+                // @ts-ignore
+                totals[c.id].votes += feature.properties[c.id] || 0;
+            }
         });
     });
 
