@@ -103,12 +103,12 @@ const SETTINGS = {
 // generate properties.data
 const parsedFilterData = d3.csvParse(FILTER_DATA, d3.autoType) as any[];
 const FILTER_PROPERTIES = new Map(
-  parsedFilterData.map(({ ElectDist, ...rest }) => [String(ElectDist), rest])
+    parsedFilterData.map(({ ElectDist, ...rest }) => [String(ElectDist), rest])
 );
 
 const parsedResultsData = d3.csvParse(RESULTS_DATA, d3.autoType) as any[];
 const RESULTS_PROPERTIES = new Map(
-  parsedResultsData.map(({ ElectDist, ...rest }) => [String(ElectDist), rest])
+    parsedResultsData.map(({ ElectDist, ...rest }) => [String(ElectDist), rest])
 );
 
 const features = NYED_GEOM.features.map((d: any) => {
@@ -424,59 +424,62 @@ onMounted(() => {
 </script>
 
 <template>
-    <div id="comparison-container">
+    <div id="main">
         <div class="cuny-logo-wrapper">
             <img :src="cunygclogo" alt="CUNY Logo" class="cuny-logo">
         </div>
+        <div class="comparison-container">
+            <div class="details">
+                <h2>NYC 2025 General Election: Mayor</h2>
+                <h3>Vote share by election district</h3>
+                <Legend :COLOR_SCALE="COLOR_SCALE"></Legend>
 
-        <div class="top-overlay">
-            <h2>NYC 2025 General Election: Mayor</h2>
-            <h3>Vote share by election district</h3>
-            <Legend :COLOR_SCALE="COLOR_SCALE"></Legend>
+                <div class="filters-section">
+                    <label for="filter-search">Filter Election Districts:</label>
+                    <div class="search-container">
+                        <input type="text" v-model="searchQuery"
+                            placeholder="Search filters (e.g., 'renters', 'income')..." class="filter-search"
+                            @focus="performSearch()" @blur="handleBlur" autocomplete="off" arsedResultsData. />
 
-            <div class="filters-section">
-                <label for="filter-search">Filter Election Districts:</label>
-                <div class="search-container">
-                    <input type="text" v-model="searchQuery" placeholder="Search filters (e.g., 'renters', 'income')..."
-                        class="filter-search" @focus="performSearch()" @blur="handleBlur" autocomplete="off" arsedResultsData./>
+                        <div v-if="showSearchResults && searchResults.length > 0" class="search-results">
+                            <div v-for="result in searchResults" :key="result.column" class="search-result-item"
+                                @click="addFilter(result)">
+                                {{ result.label }}
+                            </div>
+                        </div>
 
-                    <div v-if="showSearchResults && searchResults.length > 0" class="search-results">
-                        <div v-for="result in searchResults" :key="result.column" class="search-result-item"
-                            @click="addFilter(result)">
-                            {{ result.label }}
+                        <div v-if="showSearchResults && searchQuery && searchResults.length === 0"
+                            class="search-results">
+                            <div class="search-result-item no-results">
+                                No filters found
+                            </div>
                         </div>
                     </div>
 
-                    <div v-if="showSearchResults && searchQuery && searchResults.length === 0" class="search-results">
-                        <div class="search-result-item no-results">
-                            No filters found
+                    <div v-if="selectedFilters.length > 0" class="selected-filters">
+                        <div v-for="filter in selectedFilters" :key="filter.column" class="filter-pill">
+                            <span class="filter-pill-text">{{ filter.label }}</span>
+                            <button @click="removeFilter(filter.column)" class="filter-pill-close"
+                                aria-label="Remove filter">
+                                ×
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <div v-if="selectedFilters.length > 0" class="selected-filters">
-                    <div v-for="filter in selectedFilters" :key="filter.column" class="filter-pill">
-                        <span class="filter-pill-text">{{ filter.label }}</span>
-                        <button @click="removeFilter(filter.column)" class="filter-pill-close"
-                            aria-label="Remove filter">
-                            ×
-                        </button>
-                    </div>
+                <div class="button-group">
+                    <button v-if="selectedFilters.length > 0" @click="clearFilters" class="clear-button">
+                        Clear All Filters
+                    </button>
                 </div>
+                <InfoBox :hoveredData="hoveredData" :COLOR_SCALE="COLOR_SCALE" :idKey="SETTINGS.promoteId"
+                    :filteredFeatures="filteredDistricts" @close="clearClickedId" />
             </div>
-
-            <div class="button-group">
-                <button v-if="selectedFilters.length > 0" @click="clearFilters" class="clear-button">
-                    Clear All Filters
-                </button>
-                <button v-if="clickedId" @click="clearClickedId" class="clear-button">
-                    Clear Selection
-                </button>
+            <div class="map-container">
+                <div id="map" class="map"></div>
             </div>
         </div>
-        <InfoBox :hoveredData="hoveredData" :COLOR_SCALE="COLOR_SCALE" :idKey="SETTINGS.promoteId"
-            :filteredFeatures="filteredDistricts" @close="clearClickedId" />
-        <div id="map" class="map"></div>
+
     </div>
 </template>
 
@@ -486,34 +489,80 @@ body {
     padding: 0;
 }
 
-#comparison-container {
+#main {
     position: relative;
     width: 100vw;
     height: 100vh;
 }
 
-.top-overlay {
+.comparison-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     position: absolute;
-    z-index: 3;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+@media (min-width: 768px) {
+    .comparison-container {
+        flex-direction: row;
+    }
+}
+
+.details {
+    width: 100%;
+    height: 60%;
+    overflow: auto;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    color: #1f2937;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
     background-color: white;
-    padding: 0.5rem;
-    border-radius: 5px;
+}
+
+@media (min-width: 768px) {
+    .details {
+        height: 100%;
+        width: 22rem;
+    }
+}
+
+.map-container {
+    position: relative;
+    flex: 1;
+    order: -1;
+}
+
+@media (min-width: 768px) {
+    .map-container {
+        order: 0;
+    }
+}
+
+.top-overlay {
     margin: 5px;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    max-width: min(20rem, 50%);
+    max-width: min(22rem, 50%);
 }
 
-.top-overlay h2 {
-    margin-top: 0;
+.map {
+    width: 100%;
+    height: 100%;
+}
+
+.details h2 {
+    margin: 0;
     font-size: 1.5rem;
-    line-height: 0.9;
 }
 
-.top-overlay h3 {
+.details h3 {
     margin-top: 0;
-    font-size: 1.2rem;
+    font-size: 0.8rem;
     color: #222;
 }
 
@@ -706,13 +755,6 @@ body {
 .cuny-logo {
     height: 2.5rem;
     display: block;
-}
-
-.map {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 100%;
 }
 
 :deep(.year-label) {

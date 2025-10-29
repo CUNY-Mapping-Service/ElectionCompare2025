@@ -91,6 +91,8 @@ function getLegendItems(colors: string[]) {
 .candidate-label {
     margin: 0;
     font-size: 1rem;
+    margin-top: 1rem;
+    margin-bottom: 0.2rem;
     font-weight: 600;
     transform: rotate(-50deg);
 }

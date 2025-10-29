@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, useTemplateRef, watch, nextTick } from 'vue';
+import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
 import * as d3 from 'd3';
 
 interface FeatureProperties {
@@ -33,9 +33,6 @@ const edLabel = computed(() => {
 
 const isVisible = computed(() => props.hoveredData !== null || hasFilteredData.value);
 const hasFilteredData = computed(() => props.filteredFeatures && props.filteredFeatures.length > 0);
-
-// Mobile tab state
-const activeTab = ref<'aggregate' | 'ed'>('aggregate');
 
 // Chart refs
 const chart25Ref = useTemplateRef('chart25');
@@ -313,7 +310,7 @@ onMounted(() => {
     };
 });
 
-watch([data25, data21, aggregateData25, aggregateData21, containerWidth, isVisible, activeTab], () => {
+watch([data25, data21, aggregateData25, aggregateData21, containerWidth, isVisible], () => {
     if (!isVisible.value) return;
 
     // Wait a tick 
@@ -321,19 +318,6 @@ watch([data25, data21, aggregateData25, aggregateData21, containerWidth, isVisib
         redrawCharts();
     });
 }, { immediate: true });
-
-// Switch to ED tab on mobile when user hovers/clicks a district (only when filters are active)
-watch([() => props.hoveredData, isMobile, hasFilteredData], async () => {
-    // Only manage tab switching when filters are active
-    if (!hasFilteredData.value) return;
-
-    if (isMobile.value && props.hoveredData) {
-        await nextTick();
-        activeTab.value = 'ed';
-    } else if (!props.hoveredData) {
-        activeTab.value = 'aggregate';
-    }
-});
 </script>
 
 <template>
@@ -343,71 +327,13 @@ watch([() => props.hoveredData, isMobile, hasFilteredData], async () => {
                 <div>
                     <h3>{{ hasFilteredData && !hoveredData ? 'Filtered Districts' : (hasFilteredData ? edLabel :
                         edLabel) }}</h3>
-                    <p v-if="hasFilteredData" class="filter-count">{{ filteredFeatures?.length }} districts selected</p>
                 </div>
-                <button class="close-button" @click="emit('close')" aria-label="Close">
+                <button v-if="hoveredData" class="close-button" @click="emit('close')" aria-label="Close">
                     ×
                 </button>
             </div>
-        </div>
-
-        <!-- Mobile Tab Navigation -->
-        <div v-if="isMobile && hasFilteredData && hoveredData" class="tab-nav">
-            <button class="tab-button" :class="{ active: activeTab === 'aggregate' }" @click="activeTab = 'aggregate'">
-                All Filtered
-            </button>
-            <button class="tab-button" :class="{ active: activeTab === 'ed' }" @click="activeTab = 'ed'">
-                {{ edLabel }}
-            </button>
-        </div>
-
-        <div class="charts-wrapper">
-            <!-- Aggregate Charts (Desktop: always show if filtered, Mobile: show only when active tab or when no hoveredData) -->
-            <div v-if="hasFilteredData && (!isMobile || activeTab === 'aggregate' || !hoveredData)"
-                class="aggregate-section">
-                <div class="section-header">
-                    <h2>Aggregate Results</h2>
-                    <p class="section-subtitle">Combined results from {{ filteredFeatures?.length }} filtered districts
-                    </p>
-                </div>
-
-                <!-- 2025 Aggregate -->
-                <div class="chart-section">
-                    <div class="chart-title">
-                        <h3>2025 General</h3>
-                        <p>
-                            Winner: <span class="winner-pill"
-                                :style="{ backgroundColor: getWinnerColor(aggregateWinner25, '2025') }">
-                                {{ aggregateWinner25 }}
-                            </span>
-                        </p>
-                    </div>
-                    <div ref="aggChart25"></div>
-                </div>
-
-                <!-- 2021 Aggregate -->
-                <div class="chart-section">
-                    <div class="chart-title">
-                        <h3>2021 General</h3>
-                        <p>
-                            Winner: <span class="winner-pill"
-                                :style="{ backgroundColor: getWinnerColor(aggregateWinner21, '2021') }">
-                                {{ aggregateWinner21 }}
-                            </span>
-                        </p>
-                    </div>
-                    <div ref="aggChart21"></div>
-                </div>
-
-                <div v-if="!isMobile" class="divider"></div>
-            </div>
-
-            <!-- Individual ED Charts (Desktop: always show when hoveredData exists, Mobile: show when active tab OR when no filters) -->
-            <div v-if="hoveredData && (!isMobile || activeTab === 'ed' || !hasFilteredData)" class="ed-section">
-                <div v-if="hasFilteredData && !isMobile" class="section-header">
-                    <h2>{{ edLabel }}</h2>
-                </div>
-
+            <!-- Individual ED Charts - show when a district is selected -->
+            <div v-if="hoveredData" class="ed-section">
                 <!-- 2025 Election Chart -->
                 <div class="chart-section">
                     <div class="chart-title">
@@ -437,21 +363,53 @@ watch([() => props.hoveredData, isMobile, hasFilteredData], async () => {
                 </div>
             </div>
         </div>
+
+        <!-- Aggregate Charts - show when filters are active -->
+        <div v-if="hasFilteredData" class="aggregate-section">
+            <div class="section-header">
+                <h2>Aggregate Results</h2>
+                <p class="section-subtitle">Combined results from {{ filteredFeatures?.length }} filtered districts
+                </p>
+            </div>
+
+            <!-- 2025 Aggregate -->
+            <div class="chart-section">
+                <div class="chart-title">
+                    <h3>2025 General</h3>
+                    <p>
+                        Winner: <span class="winner-pill"
+                            :style="{ backgroundColor: getWinnerColor(aggregateWinner25, '2025') }">
+                            {{ aggregateWinner25 }}
+                        </span>
+                    </p>
+                </div>
+                <div ref="aggChart25"></div>
+            </div>
+
+            <!-- 2021 Aggregate -->
+            <div class="chart-section">
+                <div class="chart-title">
+                    <h3>2021 General</h3>
+                    <p>
+                        Winner: <span class="winner-pill"
+                            :style="{ backgroundColor: getWinnerColor(aggregateWinner21, '2021') }">
+                            {{ aggregateWinner21 }}
+                        </span>
+                    </p>
+                </div>
+                <div ref="aggChart21"></div>
+            </div>
+        </div>
     </div>
 </template>
 
 <style scoped>
 .infobox-container {
-    position: absolute;
-    right: 5px;
-    bottom: 5px;
-    z-index: 2;
     background-color: white;
-    box-shadow: 2px 2px 5px rgba(94, 94, 94, 0.76);
-    padding: 15px;
-    border-radius: 4px;
-    min-width: 50%;
-    max-width: 400px;
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
 
 .header {
@@ -504,43 +462,6 @@ watch([() => props.hoveredData, isMobile, hasFilteredData], async () => {
     margin: 4px 0 0 0;
     font-size: 12px;
     color: #666;
-}
-
-.tab-nav {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 15px;
-    border-bottom: 2px solid #dee2e6;
-}
-
-.tab-button {
-    flex: 1;
-    padding: 10px 16px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    color: #666;
-    border-bottom: 3px solid transparent;
-    transition: all 0.2s ease;
-    margin-bottom: -2px;
-}
-
-.tab-button:hover {
-    color: #333;
-    background-color: #f8f9fa;
-}
-
-.tab-button.active {
-    color: #007bff;
-    border-bottom-color: #007bff;
-}
-
-.charts-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
 }
 
 .aggregate-section,
@@ -628,12 +549,6 @@ watch([() => props.hoveredData, isMobile, hasFilteredData], async () => {
 }
 
 @media screen and (max-width: 600px) {
-    .infobox-container {
-        max-width: 90vw;
-        left: 5px;
-        right: 5px;
-    }
-
     .header h3 {
         font-size: 14px;
     }
