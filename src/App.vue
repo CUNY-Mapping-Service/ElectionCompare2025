@@ -285,7 +285,7 @@ onMounted(() => {
         attributionControl: false
     });
 
-    map.addControl(new AttributionControl({ compact: true }), 'bottom-left');
+    map.addControl(new AttributionControl({ compact: true, customAttribution: '' }), 'bottom-left');
     map.addControl(new (NavigationControl as any)({ showCompass: false }), 'bottom-left');
 
 
@@ -746,13 +746,16 @@ body {
     z-index: 2;
     top: 0;
     right: 0;
-    padding: 0.5rem;
-    background: linear-gradient(135deg, #ffffff1e 0%, #dfdfdf41 100%);
+    padding: 0.2rem;
+    pointer-events: none;
 }
 
 .cuny-logo {
     height: 2.5rem;
     display: block;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #ffffff1e 0%, #dfdfdf41 100%);
+    padding: 0.1rem;
 }
 
 :deep(.year-label) {

@@ -1,12 +1,28 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 const { COLOR_SCALE } = defineProps(['COLOR_SCALE'])
+
+// Detect if screen is mobile/small on mount
+const isMobile = ref(false)
 const isExpanded = ref(true)
+
+onMounted(() => {
+    // Check if viewport is smaller than 768px
+    isMobile.value = window.innerWidth < 768
+    // Collapse by default on mobile
+    if (isMobile.value) {
+        isExpanded.value = false
+    }
+})
+
+function toggleExpanded() {
+    isExpanded.value = !isExpanded.value
+}
 
 function getLabelText(index: number) {
     const breakpoint = COLOR_SCALE.breakpoints[index];
     const nextBreakpoint = COLOR_SCALE.breakpoints[index + 1];
-    if(breakpoint === 5){
+    if (breakpoint === 5) {
         return `${breakpoint} - ${nextBreakpoint}%`
     }
     return `${breakpoint} - ${nextBreakpoint}`
@@ -14,26 +30,33 @@ function getLabelText(index: number) {
 </script>
 <template>
     <div class="legend-container">
-        <div class="legend">
-            <!-- Header row with candidate names -->
-            <div class="legend-header">
-                <div v-for="candidate in COLOR_SCALE.candidates" :key="`header-${candidate.id}`" class="header-cell">
-                    <span class="candidate-name">{{ candidate.label.split(' ')[1] }}</span>
+        <button @click="toggleExpanded" class="legend-toggle" aria-label="Toggle legend">
+            {{ isExpanded ? 'Hide Legend' : 'Legend' }}
+        </button>
+        <div v-show="isExpanded" class="legend-content">
+            <div class="legend">
+                <!-- Header row with candidate names -->
+                <div class="legend-header">
+                    <div v-for="candidate in COLOR_SCALE.candidates" :key="`header-${candidate.id}`"
+                        class="header-cell">
+                        <span class="candidate-name">{{ candidate.label.split(' ')[1] }}</span>
+                    </div>
+                    <div class="header-cell label-header"></div>
                 </div>
-                <div class="header-cell label-header"></div>
+
+                <!-- swatches and labels -->
+                <div v-for="(breakpoint, index) in COLOR_SCALE.breakpoints.slice(0, -1)" :key="index" class="legend-row">
+                    <div v-for="candidate in COLOR_SCALE.candidates" :key="`${candidate.id}-${index}`"
+                        class="swatch-cell">
+                        <span class="swatch" :style="`background-color: ${candidate.colors[index]}`"></span>
+                    </div>
+                    <div class="label-cell">
+                        <span>{{ getLabelText(index) }}</span>
+                    </div>
+                </div>
             </div>
-            
-            <!-- swatches and labels -->
-            <div v-for="(breakpoint, index) in COLOR_SCALE.breakpoints.slice(0,-1)" :key="index" class="legend-row">
-                <div v-for="candidate in COLOR_SCALE.candidates" :key="`${candidate.id}-${index}`" class="swatch-cell">
-                    <span class="swatch" :style="`background-color: ${candidate.colors[index]}`"></span>
-                </div>
-                <div class="label-cell">
-                    <span>{{ getLabelText(index) }}</span>
-                </div>
-            </div>
+            <p class="subtitle">Blank areas = no votes and/or no population</p>
         </div>
-        <p class="subtitle">Blank areas = no votes and/or no population</p>
     </div>
 </template>
 <style scoped>
@@ -46,6 +69,32 @@ function getLabelText(index: number) {
     flex-direction: column;
     align-items: end;
     font-family: monospace;
+    pointer-events: none;
+}
+
+.legend-toggle {
+    pointer-events: auto;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 0.25rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s;
+}
+
+.legend-toggle:hover {
+    background-color: rgba(255, 255, 255, 1);
+}
+
+.legend-content {
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: end;
 }
 
 .legend {
