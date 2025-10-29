@@ -432,7 +432,7 @@ onMounted(() => {
                 <h3>Vote share by election district</h3>
 
                 <div class="filters-section">
-                    <label for="filter-search">Filter Election Districts:</label>
+                    <label for="filter-search">Show Election Districts based on:</label>
                     <div class="search-container">
                         <input type="text" v-model="searchQuery"
                             placeholder="Search filters (e.g., 'renters', 'income')..." class="filter-search"
@@ -505,6 +505,7 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
+    font-family: Roboto, Helvetica, Arial, sans-serif;    
 }
 
 @media (min-width: 768px) {

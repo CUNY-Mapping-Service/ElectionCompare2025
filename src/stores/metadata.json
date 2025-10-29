@@ -43,42 +43,42 @@
   {
     "column": "rvhisp",
     "short_label": "Voters w/Hispanic surnames",
-    "label": "One-third or more of active registered voters w/Hispanic surname",
+    "label": "EDs with 1/3 or more of active registered voters w/Hispanic surname",
     "isFilter": true,
     "keyterms": ["hispanic", "latino", "latina", "latinx", "spanish", "surname", "name"]
   },
   {
     "column": "rvjwsh",
     "short_label": "Voters w/Jewish surnames",
-    "label": "10% or more of active registered voters w/Jewish surname",
+    "label": "EDs with 10% or more of active registered voters w/Jewish surname",
     "isFilter": true,
     "keyterms": ["jewish", "jew", "judaism", "surname", "religious"]
   },
   {
     "column": "rvirit",
     "short_label": "Voters w/Irish or Italian surnames",
-    "label": "6% or more active registered voters w/Irish or Italian surname",
+    "label": "EDs with 6% or more active registered voters w/Irish or Italian surname",
     "isFilter": true,
     "keyterms": ["irish", "italian", "catholic", "surname", "religious", "european"]
   },
   {
     "column": "rvmslm",
     "short_label": "Voters w/Muslim surnames",
-    "label": "8% or more active registered voters w/Muslim surname",
+    "label": "EDs with 8% or more active registered voters w/Muslim surname",
     "isFilter": true,
     "keyterms": ["muslim", "islam", "islamic", "surname", "religious"]
   },
   {
     "column": "rvchns",
     "short_label": "Voters w/Chinese surnames",
-    "label": "8% or more active registered voters w/Chinese surname",
+    "label": "EDs with 8% or more active registered voters w/Chinese surname",
     "isFilter": true,
     "keyterms": ["chinese", "china", "asian", "surname"]
   },
   {
     "column": "rvgopnop",
     "short_label": "GOP or 'No party' voters",
-    "label": "40% or more active registered voters enrolled as GOP or no party",
+    "label": "EDs with 40% or more active registered voters enrolled as GOP or no party",
     "isFilter": true,
     "keyterms": ["enrollment", "republican", "gop", "conservative", "independent", "no party", "unaffiliated", "nonpartisan", "blank"]
   },

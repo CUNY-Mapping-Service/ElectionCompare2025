@@ -38,7 +38,7 @@ const hasFilteredData = computed(() => props.filteredFeatures && props.filteredF
 // Compute filter labels for display
 const filterLabelsText = computed(() => {
     if (!props.selectedFilters || props.selectedFilters.length === 0) return '';
-    return props.selectedFilters.map(f => f.label).join(', ');
+    return props.selectedFilters.map(f => f.label).join(' AND ');
 });
 
 // Chart refs
@@ -332,9 +332,8 @@ watch([data25, data21, aggregateData25, aggregateData21, containerWidth, isVisib
         <!-- Aggregate Charts - show when filters are active -->
         <div v-if="hasFilteredData" class="aggregate-section">
             <div class="section-header">
-                <p class="section-subtitle">Combined results from {{ filteredFeatures?.length }} filtered districts:
-                    {{ filterLabelsText }}
-                </p>
+                <p class="section-subtitle-text-body-1">Combined results from {{ filteredFeatures?.length.toLocaleString() }} filtered election districts:</p>
+                <p class="section-subtitle-text-body-2">{{ filterLabelsText }}</p>
             </div>
 
             <!-- 2025 Aggregate -->
@@ -384,7 +383,7 @@ watch([data25, data21, aggregateData25, aggregateData21, containerWidth, isVisib
                     <div class="chart-title">
                         <h3>2025 General</h3>
                         <p>
-                            Winner: <span class="winner-pill"
+                            ED winner: <span class="winner-pill"
                                 :style="{ backgroundColor: getWinnerColor(winner25, '2025') }">
                                 {{ winner25 }}
                             </span>
@@ -398,7 +397,7 @@ watch([data25, data21, aggregateData25, aggregateData21, containerWidth, isVisib
                     <div class="chart-title">
                         <h3>2021 General</h3>
                         <p>
-                            Winner: <span class="winner-pill"
+                            ED winner: <span class="winner-pill"
                                 :style="{ backgroundColor: getWinnerColor(winner21, '2021') }">
                                 {{ winner21 }}
                             </span>
@@ -418,6 +417,7 @@ watch([data25, data21, aggregateData25, aggregateData21, containerWidth, isVisib
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+    font-family: Roboto, Helvetica, Arial, sans-serif;
 }
 
 .header {
@@ -491,11 +491,26 @@ watch([data25, data21, aggregateData25, aggregateData21, containerWidth, isVisib
     color: #333;
 }
 
-.section-subtitle {
+.section-subtitle-text-body-1 {
     margin: 4px 0 0 0;
-    font-size: 12px;
+/*     font-size: 12px;
+    font-style: italic; */
     color: #666;
-    font-style: italic;
+font-size: 1rem;
+font-weight: 600;
+line-height: 1.5;
+letter-spacing: 0.03125em;
+}
+
+.section-subtitle-text-body-2 {
+    margin: 4px 0 0 0;
+/*     font-size: 12px;
+    font-style: italic; */
+    color: #666;
+font-size: 0.875rem;
+font-weight: 400;
+line-height: 1.425;
+letter-spacing: 0.0178571429em;
 }
 
 .divider {
