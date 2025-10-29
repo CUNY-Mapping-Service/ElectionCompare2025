@@ -14,6 +14,7 @@ interface Props {
     COLOR_SCALE: any;
     idKey: string;
     filteredFeatures?: any[]; // Array of all filtered district features
+    selectedFilters?: Array<{ column: string; label: string; short_label: string }>;
 }
 
 const props = defineProps<Props>();
@@ -33,6 +34,12 @@ const edLabel = computed(() => {
 
 const isVisible = computed(() => props.hoveredData !== null || hasFilteredData.value);
 const hasFilteredData = computed(() => props.filteredFeatures && props.filteredFeatures.length > 0);
+
+// Compute filter labels for display
+const filterLabelsText = computed(() => {
+    if (!props.selectedFilters || props.selectedFilters.length === 0) return '';
+    return props.selectedFilters.map(f => f.label).join(', ');
+});
 
 // Chart refs
 const chart25Ref = useTemplateRef('chart25');
@@ -325,7 +332,8 @@ watch([data25, data21, aggregateData25, aggregateData21, containerWidth, isVisib
         <!-- Aggregate Charts - show when filters are active -->
         <div v-if="hasFilteredData" class="aggregate-section">
             <div class="section-header">
-                <p class="section-subtitle">Combined results from {{ filteredFeatures?.length }} filtered districts
+                <p class="section-subtitle">Combined results from {{ filteredFeatures?.length }} filtered districts:
+                    {{ filterLabelsText }}
                 </p>
             </div>
 
@@ -357,10 +365,12 @@ watch([data25, data21, aggregateData25, aggregateData21, containerWidth, isVisib
                 <div ref="aggChart21"></div>
             </div>
         </div>
-        <div class="header"  v-if="hoveredData">
+        <div class="header" v-if="hoveredData">
             <div class="header-content">
                 <div>
-                    <h3>You have selected: {{ hasFilteredData && !hoveredData ? 'Filtered Districts' : (hasFilteredData ? edLabel :
+                    <h3>You have selected: {{ hasFilteredData && !hoveredData ? 'Filtered Districts' : (hasFilteredData
+                        ?
+                        edLabel :
                         edLabel) }}</h3>
                 </div>
                 <button v-if="hoveredData" class="close-button" @click="emit('close')" aria-label="Close">

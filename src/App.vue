@@ -62,7 +62,8 @@ const FILTER_OPTIONS = METADATA
     .filter((item: any) => item.isFilter)
     .map((item: any) => ({
         column: item.column,
-        label: item.label
+        label: item.label,
+        short_label: item.short_label || item.label
     }));
 
 const SETTINGS = {
@@ -155,9 +156,9 @@ const features = NYED_GEOM.features.map((d: any) => {
 // state
 const hoveredId = ref<string | number | null>(null)
 const clickedId = ref<string | number | null>(null)
-const selectedFilters = ref<Array<{ column: string; label: string }>>([])
+const selectedFilters = ref<Array<{ column: string; label: string; short_label: string }>>([])
 const searchQuery = ref('')
-const searchResults = ref<Array<{ column: string; label: string }>>([])
+const searchResults = ref<Array<{ column: string; label: string; short_label: string }>>([])
 const showSearchResults = ref(false)
 
 // Initialize FlexSearch index
@@ -214,7 +215,7 @@ function clearFilters() {
     selectedFilters.value = []
 }
 
-function addFilter(filter: { column: string; label: string }) {
+function addFilter(filter: { column: string; label: string; short_label: string }) {
     // Check if filter already exists
     const exists = selectedFilters.value.some(f => f.column === filter.column)
     if (!exists) {
@@ -238,7 +239,7 @@ function performSearch() {
         return
     }
     const results = searchIndex.search(searchQuery.value)
-    searchResults.value = results.map((index: any) => FILTER_OPTIONS[index]).filter(Boolean) as Array<{ column: string; label: string }>
+    searchResults.value = results.map((index: any) => FILTER_OPTIONS[index]).filter(Boolean) as Array<{ column: string; label: string; short_label: string }>
     showSearchResults.value = true
 }
 
@@ -435,12 +436,12 @@ onMounted(() => {
                     <div class="search-container">
                         <input type="text" v-model="searchQuery"
                             placeholder="Search filters (e.g., 'renters', 'income')..." class="filter-search"
-                            @focus="performSearch()" @blur="handleBlur" autocomplete="off" arsedResultsData. />
+                            @focus="performSearch()" @blur="handleBlur" autocomplete="off" />
 
                         <div v-if="showSearchResults && searchResults.length > 0" class="search-results">
                             <div v-for="result in searchResults" :key="result.column" class="search-result-item"
-                                @click="addFilter(result)">
-                                {{ result.label }}
+                                @click="addFilter(result)" :title="result.label">
+                                {{ result.short_label }}
                             </div>
                         </div>
 
@@ -453,8 +454,9 @@ onMounted(() => {
                     </div>
 
                     <div v-if="selectedFilters.length > 0" class="selected-filters">
-                        <div v-for="filter in selectedFilters" :key="filter.column" class="filter-pill">
-                            <span class="filter-pill-text">{{ filter.label }}</span>
+                        <div v-for="filter in selectedFilters" :key="filter.column" class="filter-pill"
+                            :title="filter.label">
+                            <span class="filter-pill-text">{{ filter.short_label }}</span>
                             <button @click="removeFilter(filter.column)" class="filter-pill-close"
                                 aria-label="Remove filter">
                                 ×
@@ -469,7 +471,7 @@ onMounted(() => {
                     </button>
                 </div>
                 <InfoBox :hoveredData="hoveredData" :COLOR_SCALE="COLOR_SCALE" :idKey="SETTINGS.promoteId"
-                    :filteredFeatures="filteredDistricts" @close="clearClickedId" />
+                    :filteredFeatures="filteredDistricts" :selectedFilters="selectedFilters" @close="clearClickedId" />
             </div>
             <div class="map-container">
                 <div id="map" class="map"></div>
