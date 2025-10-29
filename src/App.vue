@@ -12,9 +12,9 @@ import { Index } from 'flexsearch';
 import cunygclogo from './cunygc_logo.png'
 
 import NYED_GEOM from './stores/nyed25c.json';
-import FILTER_DATA from './stores/filterdata.json'
+import FILTER_DATA from './stores/filterdata.csv?raw'
 import METADATA from './stores/metadata.json'
-import RESULTS_DATA from './stores/test25results.json'
+import RESULTS_DATA from './stores/test25results.csv?raw'
 
 import InfoBox from './InfoBox.vue'
 import Legend from './Legend.vue';
@@ -101,8 +101,15 @@ const SETTINGS = {
 }
 
 // generate properties.data
-const FILTER_PROPERTIES = new Map(Object.entries(FILTER_DATA))
-const RESULTS_PROPERTIES = new Map(Object.entries(RESULTS_DATA))
+const parsedFilterData = d3.csvParse(FILTER_DATA, d3.autoType);
+const FILTER_PROPERTIES = new Map(
+  parsedFilterData.map(({ ElectDist, ...rest }) => [String(ElectDist), rest])
+);
+
+const parsedResultsData = d3.csvParse(RESULTS_DATA, d3.autoType);
+const RESULTS_PROPERTIES = new Map(
+  parsedResultsData.map(({ ElectDist, ...rest }) => [String(ElectDist), rest])
+);
 
 const features = NYED_GEOM.features.map((d: any) => {
     const electDist = String(d.properties.ElectDist);
@@ -431,7 +438,7 @@ onMounted(() => {
                 <label for="filter-search">Filter Election Districts:</label>
                 <div class="search-container">
                     <input type="text" v-model="searchQuery" placeholder="Search filters (e.g., 'renters', 'income')..."
-                        class="filter-search" @focus="performSearch()" @blur="handleBlur" />
+                        class="filter-search" @focus="performSearch()" @blur="handleBlur" autocomplete="off" />
 
                     <div v-if="showSearchResults && searchResults.length > 0" class="search-results">
                         <div v-for="result in searchResults" :key="result.column" class="search-result-item"

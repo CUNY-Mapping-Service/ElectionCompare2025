@@ -35,7 +35,7 @@ function getLegendItems(colors: string[]) {
                 </div>
             </div>
             <div class="candidate" style="width: auto;">
-                <h3 class="candidate-label">‎</h3>
+                <h3 class="candidate-label">‎ </h3>
                 <div class="breakpoint" v-for="(item, index) in getLegendItems(COLOR_SCALE.candidates[0].colors)"
                     :key="index">
                     <p>{{ item.label }}</p>
