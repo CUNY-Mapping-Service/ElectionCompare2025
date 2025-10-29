@@ -425,14 +425,10 @@ onMounted(() => {
 
 <template>
     <div id="main">
-        <div class="cuny-logo-wrapper">
-            <img :src="cunygclogo" alt="CUNY Logo" class="cuny-logo">
-        </div>
         <div class="comparison-container">
             <div class="details">
                 <h2>NYC 2025 General Election: Mayor</h2>
                 <h3>Vote share by election district</h3>
-                <Legend :COLOR_SCALE="COLOR_SCALE"></Legend>
 
                 <div class="filters-section">
                     <label for="filter-search">Filter Election Districts:</label>
@@ -477,6 +473,10 @@ onMounted(() => {
             </div>
             <div class="map-container">
                 <div id="map" class="map"></div>
+                <div class="cuny-logo-wrapper">
+                    <img :src="cunygclogo" alt="CUNY Logo" class="cuny-logo">
+                </div>
+                <Legend :COLOR_SCALE="COLOR_SCALE"></Legend>
             </div>
         </div>
 
@@ -526,7 +526,7 @@ body {
 @media (min-width: 768px) {
     .details {
         height: 100%;
-        width: 22rem;
+        width: 25rem;
     }
 }
 
@@ -547,7 +547,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    max-width: min(22rem, 50%);
+    max-width: min(25rem, 50%);
 }
 
 .map {
@@ -570,9 +570,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    padding: 0.5rem 0;
-    border-top: 1px solid #ddd;
-    border-bottom: 1px solid #ddd;
+    padding: 1rem 0;
 }
 
 .filters-section label {

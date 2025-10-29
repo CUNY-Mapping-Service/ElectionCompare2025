@@ -322,52 +322,9 @@ watch([data25, data21, aggregateData25, aggregateData21, containerWidth, isVisib
 
 <template>
     <div ref="container" class="infobox-container" v-if="isVisible">
-        <div class="header">
-            <div class="header-content">
-                <div>
-                    <h3>{{ hasFilteredData && !hoveredData ? 'Filtered Districts' : (hasFilteredData ? edLabel :
-                        edLabel) }}</h3>
-                </div>
-                <button v-if="hoveredData" class="close-button" @click="emit('close')" aria-label="Close">
-                    ×
-                </button>
-            </div>
-            <!-- Individual ED Charts - show when a district is selected -->
-            <div v-if="hoveredData" class="ed-section">
-                <!-- 2025 Election Chart -->
-                <div class="chart-section">
-                    <div class="chart-title">
-                        <h3>2025 General</h3>
-                        <p>
-                            Winner: <span class="winner-pill"
-                                :style="{ backgroundColor: getWinnerColor(winner25, '2025') }">
-                                {{ winner25 }}
-                            </span>
-                        </p>
-                    </div>
-                    <div ref="chart25"></div>
-                </div>
-
-                <!-- 2021 Election Chart -->
-                <div class="chart-section">
-                    <div class="chart-title">
-                        <h3>2021 General</h3>
-                        <p>
-                            Winner: <span class="winner-pill"
-                                :style="{ backgroundColor: getWinnerColor(winner21, '2021') }">
-                                {{ winner21 }}
-                            </span>
-                        </p>
-                    </div>
-                    <div ref="chart21"></div>
-                </div>
-            </div>
-        </div>
-
         <!-- Aggregate Charts - show when filters are active -->
         <div v-if="hasFilteredData" class="aggregate-section">
             <div class="section-header">
-                <h2>Aggregate Results</h2>
                 <p class="section-subtitle">Combined results from {{ filteredFeatures?.length }} filtered districts
                 </p>
             </div>
@@ -400,6 +357,47 @@ watch([data25, data21, aggregateData25, aggregateData21, containerWidth, isVisib
                 <div ref="aggChart21"></div>
             </div>
         </div>
+        <div class="header"  v-if="hoveredData">
+            <div class="header-content">
+                <div>
+                    <h3>You have selected: {{ hasFilteredData && !hoveredData ? 'Filtered Districts' : (hasFilteredData ? edLabel :
+                        edLabel) }}</h3>
+                </div>
+                <button v-if="hoveredData" class="close-button" @click="emit('close')" aria-label="Close">
+                    ×
+                </button>
+            </div>
+            <!-- Individual ED Charts - show when a district is selected -->
+            <div class="ed-section">
+                <!-- 2025 Election Chart -->
+                <div class="chart-section">
+                    <div class="chart-title">
+                        <h3>2025 General</h3>
+                        <p>
+                            Winner: <span class="winner-pill"
+                                :style="{ backgroundColor: getWinnerColor(winner25, '2025') }">
+                                {{ winner25 }}
+                            </span>
+                        </p>
+                    </div>
+                    <div ref="chart25"></div>
+                </div>
+
+                <!-- 2021 Election Chart -->
+                <div class="chart-section">
+                    <div class="chart-title">
+                        <h3>2021 General</h3>
+                        <p>
+                            Winner: <span class="winner-pill"
+                                :style="{ backgroundColor: getWinnerColor(winner21, '2021') }">
+                                {{ winner21 }}
+                            </span>
+                        </p>
+                    </div>
+                    <div ref="chart21"></div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -413,9 +411,9 @@ watch([data25, data21, aggregateData25, aggregateData21, containerWidth, isVisib
 }
 
 .header {
-    margin-bottom: 15px;
-    border-bottom: 2px solid #dee2e6;
-    padding-bottom: 10px;
+    margin: 0.2rem 0.1rem;
+    padding: 1rem;
+    outline: dashed rgb(0, 112, 240) 0.5px;
 }
 
 .header-content {
@@ -464,15 +462,16 @@ watch([data25, data21, aggregateData25, aggregateData21, containerWidth, isVisib
     color: #666;
 }
 
-.aggregate-section,
-.ed-section {
+.aggregate-section {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
 }
 
-.section-header {
-    margin-bottom: 0.5rem;
+.ed-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
 .section-header h2 {

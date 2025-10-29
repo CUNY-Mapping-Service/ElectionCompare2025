@@ -1,126 +1,117 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-
 const { COLOR_SCALE } = defineProps(['COLOR_SCALE'])
 const isExpanded = ref(true)
 
-// Generate legend items from breakpoints and colors for a given candidate
-function getLegendItems(colors: string[]) {
-    return COLOR_SCALE.breakpoints.map((breakpoint: number, index: number) => {
-        const nextBreakpoint = COLOR_SCALE.breakpoints[index + 1];
-        const label = nextBreakpoint
-            ? `${breakpoint} – ${nextBreakpoint}`
-            : `${breakpoint}%`;
-
-        return {
-            label,
-            color: colors[index]
-        };
-    });
+function getLabelText(index: number) {
+    const breakpoint = COLOR_SCALE.breakpoints[index];
+    const nextBreakpoint = COLOR_SCALE.breakpoints[index + 1];
+    return nextBreakpoint ? `${breakpoint} – ${nextBreakpoint}` : `${breakpoint}%`;
 }
 </script>
-
 <template>
     <div class="legend-container">
-        <!-- <button class="toggle-btn" @click="isExpanded = !isExpanded" :aria-expanded="isExpanded">
-            <span class="toggle-icon">{{ isExpanded ? '▼' : '▶' }}</span>
-            <span class="toggle-label">Legend</span>
-        </button> -->
-
         <div class="legend">
-            <div v-for="candidate in COLOR_SCALE.candidates" :key="candidate.id" class="candidate">
-                <h3 class="candidate-label">{{ candidate.label.split(' ')[1] }}</h3>
-                <div v-for="(item, index) in getLegendItems(candidate.colors)" :key="index">
-                    <span class="swatch" :style="`background-color: ${item.color}`"></span>
+            <!-- Header row with candidate names -->
+            <div class="legend-header">
+                <div v-for="candidate in COLOR_SCALE.candidates" :key="`header-${candidate.id}`" class="header-cell">
+                    <span class="candidate-name">{{ candidate.label.split(' ')[1] }}</span>
                 </div>
+                <div class="header-cell label-header"></div>
             </div>
-            <div class="candidate" style="width: auto;">
-                <h3 class="candidate-label">‎ </h3>
-                <div class="breakpoint" v-for="(item, index) in getLegendItems(COLOR_SCALE.candidates[0].colors)"
-                    :key="index">
-                    <p>{{ item.label }}</p>
+            
+            <!-- swatches and labels -->
+            <div v-for="(breakpoint, index) in COLOR_SCALE.breakpoints" :key="index" class="legend-row">
+                <div v-for="candidate in COLOR_SCALE.candidates" :key="`${candidate.id}-${index}`" class="swatch-cell">
+                    <span class="swatch" :style="`background-color: ${candidate.colors[index]}`"></span>
+                </div>
+                <div class="label-cell">
+                    <span>{{ getLabelText(index) }}</span>
                 </div>
             </div>
         </div>
-
         <p class="subtitle">Blank areas = no votes and/or no population</p>
     </div>
 </template>
-
 <style scoped>
 .legend-container {
+    position: absolute;
+    right: 0.5rem;
+    bottom: 0;
+    z-index: 3;
     display: flex;
     flex-direction: column;
-}
-
-.toggle-btn {
-    align-self: flex-start;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: none;
-    border: none;
-    padding: 0.5rem 0;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 600;
-    color: inherit;
-    transition: opacity 0.2s;
-}
-
-.toggle-btn:hover {
-    opacity: 0.7;
-}
-
-.toggle-icon {
-    display: inline-block;
-    width: 1rem;
-    transition: transform 0.2s;
+    align-items: end;
 }
 
 .legend {
-    display: flex;
-    gap: 2px;
-    margin-top: 2rem;
+    display: table;
+    border-collapse: collapse;
 }
 
-.candidate {
-    width: 1.1rem;
+.legend-header {
+    display: table-row;
 }
 
-.candidate-label {
-    margin: 0;
-    font-size: 1rem;
-    margin-top: 1rem;
-    margin-bottom: 0.2rem;
+.legend-row {
+    display: table-row;
+}
+
+.header-cell {
+    display: table-cell;
+    height: 2rem;
+    width: 1rem;
+    vertical-align: bottom;
+    padding: 0;
+}
+
+.label-header {
+    width: auto;
+    padding-left: 0.15rem;
+}
+
+.candidate-name {
+    display: inline-block;
+    font-size: 0.8rem;
     font-weight: 600;
-    transform: rotate(-50deg);
+    width: 1rem;
+    white-space: nowrap;
+    transform: rotate(-50deg) translateY(0.5rem);
+    transform-origin: bottom left;
+}
+
+.swatch-cell {
+    display: table-cell;
+    width: 1rem;
+    height: 1rem;
+    text-align: center;
+    vertical-align: middle;
+    padding: 0;
 }
 
 .swatch {
-    display: block;
+    display: inline-block;
     width: 1rem;
     height: 1rem;
-    flex-shrink: 0;
+    vertical-align: middle;
 }
 
-.breakpoint {
-    display: flex;
-    flex-direction: row;
-    text-wrap: wrap;
-    margin-top: 0rem;
-    gap: 0.3rem;
+.label-cell {
+    display: table-cell;
+    vertical-align: middle;
+    white-space: nowrap;
 }
 
-.breakpoint p {
-    margin-top: 0;
-    line-height: 1.1;
-    font-size: 0.9rem;
+.label-cell span {
+    font-size: 0.7rem;
+    margin-left: 0.2rem;
+    line-height: 1rem;
 }
 
 .subtitle {
     font-size: 0.8rem;
     letter-spacing: -0.5px;
-    margin-top: 0.5rem;
+    margin: 0.15rem 0 0 0;
+    text-align: right;
 }
 </style>
