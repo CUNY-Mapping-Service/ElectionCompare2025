@@ -6,7 +6,10 @@ const isExpanded = ref(true)
 function getLabelText(index: number) {
     const breakpoint = COLOR_SCALE.breakpoints[index];
     const nextBreakpoint = COLOR_SCALE.breakpoints[index + 1];
-    return nextBreakpoint ? `${breakpoint} – ${nextBreakpoint}` : `${breakpoint}%`;
+    if(breakpoint === 5){
+        return `${breakpoint} - ${nextBreakpoint}%`
+    }
+    return `${breakpoint} - ${nextBreakpoint}`
 }
 </script>
 <template>
@@ -21,7 +24,7 @@ function getLabelText(index: number) {
             </div>
             
             <!-- swatches and labels -->
-            <div v-for="(breakpoint, index) in COLOR_SCALE.breakpoints" :key="index" class="legend-row">
+            <div v-for="(breakpoint, index) in COLOR_SCALE.breakpoints.slice(0,-1)" :key="index" class="legend-row">
                 <div v-for="candidate in COLOR_SCALE.candidates" :key="`${candidate.id}-${index}`" class="swatch-cell">
                     <span class="swatch" :style="`background-color: ${candidate.colors[index]}`"></span>
                 </div>
@@ -42,6 +45,7 @@ function getLabelText(index: number) {
     display: flex;
     flex-direction: column;
     align-items: end;
+    font-family: monospace;
 }
 
 .legend {
@@ -78,6 +82,7 @@ function getLabelText(index: number) {
     white-space: nowrap;
     transform: rotate(-50deg) translateY(0.5rem);
     transform-origin: bottom left;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
 }
 
 .swatch-cell {
@@ -100,6 +105,7 @@ function getLabelText(index: number) {
     display: table-cell;
     vertical-align: middle;
     white-space: nowrap;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
 }
 
 .label-cell span {
@@ -110,8 +116,9 @@ function getLabelText(index: number) {
 
 .subtitle {
     font-size: 0.8rem;
-    letter-spacing: -0.5px;
+    letter-spacing: -1px;
     margin: 0.15rem 0 0 0;
     text-align: right;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
 }
 </style>
