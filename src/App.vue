@@ -101,12 +101,12 @@ const SETTINGS = {
 }
 
 // generate properties.data
-const parsedFilterData = d3.csvParse(FILTER_DATA, d3.autoType);
+const parsedFilterData = d3.csvParse(FILTER_DATA, d3.autoType) as any[];
 const FILTER_PROPERTIES = new Map(
   parsedFilterData.map(({ ElectDist, ...rest }) => [String(ElectDist), rest])
 );
 
-const parsedResultsData = d3.csvParse(RESULTS_DATA, d3.autoType);
+const parsedResultsData = d3.csvParse(RESULTS_DATA, d3.autoType) as any[];
 const RESULTS_PROPERTIES = new Map(
   parsedResultsData.map(({ ElectDist, ...rest }) => [String(ElectDist), rest])
 );
@@ -438,7 +438,7 @@ onMounted(() => {
                 <label for="filter-search">Filter Election Districts:</label>
                 <div class="search-container">
                     <input type="text" v-model="searchQuery" placeholder="Search filters (e.g., 'renters', 'income')..."
-                        class="filter-search" @focus="performSearch()" @blur="handleBlur" autocomplete="off" />
+                        class="filter-search" @focus="performSearch()" @blur="handleBlur" autocomplete="off" arsedResultsData./>
 
                     <div v-if="showSearchResults && searchResults.length > 0" class="search-results">
                         <div v-for="result in searchResults" :key="result.column" class="search-result-item"
