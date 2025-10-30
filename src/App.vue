@@ -302,14 +302,14 @@ onMounted(() => {
         // Add overlay sources
         map.addSource('citycouncil-source', {
             type: 'vector',
-            tiles: ['https://www.urbanresearchmaps.org/tiles/common.wrm_citycouncil.geom/{z}/{x}/{y}'],
+            tiles: ['https://www.urbanresearchmaps.org/tiles/common.wrm_citycouncil.geom,common.wrm_citycouncil.geom_pt/{z}/{x}/{y}'],
             minzoom: 0,
             maxzoom: 14
         });
 
         map.addSource('nycha-source', {
             type: 'vector',
-            tiles: ['https://www.urbanresearchmaps.org/tiles/common.nyc_nycha_dev_20251030.geom/{z}/{x}/{y}'],
+            tiles: ['https://www.urbanresearchmaps.org/tiles/common.nyc_nycha_dev_20251030.geom,common.nyc_nycha_dev_20251030.geom_pt/{z}/{x}/{y}'],
             minzoom: 0,
             maxzoom: 14
         });
@@ -399,7 +399,7 @@ onMounted(() => {
             'id': 'citycouncil-label',
             'type': 'symbol',
             'source': 'citycouncil-source',
-            'source-layer': 'common.wrm_citycouncil.geom',
+            'source-layer': 'common.wrm_citycouncil.geom_pt',
             'layout': {
                 'visibility': 'none',
                 'text-field': ['get', 'districtid'],
@@ -446,7 +446,7 @@ onMounted(() => {
             'id': 'nycha-label',
             'type': 'symbol',
             'source': 'nycha-source',
-            'source-layer': 'common.nyc_nycha_dev_20251030.geom',
+            'source-layer': 'common.nyc_nycha_dev_20251030.geom_pt',
             'layout': {
                 'visibility': 'none',
                 'text-field': ['get', 'developmen'],
