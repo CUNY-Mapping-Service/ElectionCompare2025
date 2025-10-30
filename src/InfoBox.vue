@@ -2,6 +2,9 @@
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
 import * as d3 from 'd3';
 
+const formatPercent = d3.format('.1f'); 
+const formatVotes = d3.format(',.0f');
+
 interface FeatureProperties {
     [key: string]: any;
 }
@@ -25,10 +28,10 @@ const emit = defineEmits<{
 
 const edLabel = computed(() => {
     if (!props.hoveredData) return '';
-    
+
     const id = props.hoveredData?.properties[props.idKey]
     const ntaName = props.hoveredData?.properties.nta_shortname
-    
+
     if (id) {
         const ad = String(id).slice(0, 2)
         const ed = String(id).slice(2)
@@ -59,6 +62,9 @@ const containerRef = useTemplateRef('container');
 // Track container width for responsive sizing
 const containerWidth = ref(320);
 const isMobile = ref(false);
+
+// Track scale mode: 'percentage' or 'votes'
+const scaleMode = ref<'percentage' | 'votes'>('percentage');
 
 // Aggregate data computation for filtered districts
 const aggregateData25 = computed(() => {
@@ -233,18 +239,16 @@ const copyTableToClipboard = async (data: any[], includeCitywide: boolean = fals
     let rows: string[];
 
     if (includeCitywide) {
-        // For filtered or ED views with citywide comparison
+        // For filtered or ED views with vote counts
         const viewType = hasFilteredData.value ? 'Filtered %' : 'ED %';
-        headers = ['Candidate', viewType, 'Citywide %'];
+        headers = ['Candidate', viewType, 'Votes'];
         rows = data.map(d => {
-            const citywideMatch = (hasFilteredData.value ? citywideData25 : citywideData25).value.find(c => c.name === d.name);
-            const citywidePercent = citywideMatch ? citywideMatch.percentage.toFixed(1) + '%' : 'N/A';
-            return `${d.name}\t${d.percentage.toFixed(1)}%\t${citywidePercent}`;
+            return `${d.name}\t${formatPercent(d.percentage)}%\t${formatVotes(d.votes)}`;
         });
     } else {
         // For citywide only view
         headers = ['Candidate', 'Citywide %'];
-        rows = data.map(d => `${d.name}\t${d.percentage.toFixed(1)}%`);
+        rows = data.map(d => `${d.name}\t${formatPercent(d.percentage)}%`);
     }
 
     const text = [headers.join('\t'), ...rows].join('\n');
@@ -258,7 +262,7 @@ const drawStackedChart = (ref: any, data: any[], maxVotes: number) => {
 
     d3.select(ref).selectAll("*").remove();
 
-    const margin = { top: 0, right: 10, bottom: 20, left: 0 };
+    const margin = { top: 0, right: 20, bottom: 20, left: 0 };
     const width = containerWidth.value - margin.left - margin.right;
     const height = 10;
 
@@ -269,17 +273,35 @@ const drawStackedChart = (ref: any, data: any[], maxVotes: number) => {
         .append('g')
         .attr('transform', `translate(${margin.left},${margin.top})`);
 
-    let cumulativeVotes = 0;
-    const segments = data.map((d: any) => {
-        const start = cumulativeVotes;
-        cumulativeVotes += d.votes;
-        return { ...d, start, votes: d.votes };
-    });
+    // Prepare segments based on scale mode
+    let segments;
+    let x;
 
-    // X scale based on max votes (not percentages)
-    const x = d3.scaleLinear()
-        .domain([0, maxVotes])
-        .range([0, width]);
+    if (scaleMode.value === 'percentage') {
+        // Use percentages
+        let cumulativePercent = 0;
+        segments = data.map((d: any) => {
+            const start = cumulativePercent;
+            cumulativePercent += d.percentage;
+            return { ...d, start, value: d.percentage };
+        });
+
+        x = d3.scaleLinear()
+            .domain([0, 100])
+            .range([0, width]);
+    } else {
+        // Use votes
+        let cumulativeVotes = 0;
+        segments = data.map((d: any) => {
+            const start = cumulativeVotes;
+            cumulativeVotes += d.votes;
+            return { ...d, start, value: d.votes };
+        });
+
+        x = d3.scaleLinear()
+            .domain([0, maxVotes])
+            .range([0, width]);
+    }
 
     // Draw stacked bar
     svg.selectAll('.segment')
@@ -289,18 +311,18 @@ const drawStackedChart = (ref: any, data: any[], maxVotes: number) => {
         .attr('class', 'segment')
         .attr('x', (d: any) => x(d.start))
         .attr('y', 0)
-        .attr('width', (d: any) => x(d.votes))
+        .attr('width', (d: any) => x(d.value))
         .attr('height', height)
         .attr('fill', (d: any) => d3.rgb(d.color).brighter(0.4).toString())
         .attr('stroke', '#333')
         .attr('stroke-width', 1);
 
-    // Vote counts below bar
-    svg.selectAll('.vote-count')
+    // Labels below bar
+    svg.selectAll('.bar-label')
         .data(segments)
         .enter()
         .append('text')
-        .attr('class', 'vote-count')
+        .attr('class', 'bar-label')
         .attr('x', (d: any) => x(d.start))
         .attr('y', (d: any, i: number) => 18 + (i % 2) * 8) // Stagger based on index
         .attr('text-anchor', 'start')
@@ -310,9 +332,13 @@ const drawStackedChart = (ref: any, data: any[], maxVotes: number) => {
         .attr('font-family', 'monospace')
         .attr('fill', '#666')
         .text((d: any, i: number) => {
-            if (i !== 0 && Math.round(d.votes) < 2) return '';
-            const roundedVoteCount = Math.round(d.votes).toLocaleString()
-            return i === 0 ? 'Votes:' + roundedVoteCount : roundedVoteCount;
+            if (scaleMode.value === 'percentage') {
+                if (i !== 0 && d.percentage < 1) return '';
+                return formatPercent(d.percentage) + (i === 0 ? '%' : '');
+            } else {
+                if (i !== 0 && d.votes < 2) return '';
+                return i === 0 ? 'Votes:' + formatVotes(d.votes) : formatVotes(d.votes);
+            }
         });
 };
 
@@ -343,7 +369,7 @@ const redrawCharts = () => {
         const maxVotes25 = d3.sum(citywideData25.value, (d: any) => d.votes);
         const maxVotes21 = d3.sum(citywideData21.value, (d: any) => d.votes);
         const maxVotesCitywide = Math.max(maxVotes25, maxVotes21);
-        
+
         if (aggChart25Ref.value && citywideData25.value.length > 0) {
             drawStackedChart(aggChart25Ref.value, citywideData25.value, maxVotesCitywide);
         }
@@ -398,7 +424,7 @@ onMounted(() => {
     };
 });
 
-watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywideData21, containerWidth, isVisible, showCitywideByDefault], () => {
+watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywideData21, containerWidth, isVisible, showCitywideByDefault, scaleMode], () => {
     if (!isVisible.value) return;
 
     // Wait a tick 
@@ -420,6 +446,8 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
             <div class="chart-section">
                 <div class="chart-title">
                     <h3>2025 General</h3>
+                    <span class="total-votes">{{formatVotes(d3.sum(citywideData25, (d: any) => d.votes))}} total
+                        votes</span>
                     <button class="copy-button" @click="copyTableToClipboard(citywideData25, false)"
                         title="Copy table to clipboard">
                         📋
@@ -446,7 +474,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                         </span>
                                     </div>
                                 </td>
-                                <td class="percentage-cell citywide-text">{{ item.percentage.toFixed(1) }}%</td>
+                                <td class="percentage-cell citywide-text">{{ formatPercent(item.percentage) }}%</td>
                             </tr>
                         </tbody>
                     </table>
@@ -458,6 +486,8 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
             <div class="chart-section">
                 <div class="chart-title">
                     <h3>2021 General</h3>
+                    <span class="total-votes">{{formatVotes(d3.sum(citywideData21, (d: any) => d.votes))}} total
+                        votes</span>
                     <button class="copy-button" @click="copyTableToClipboard(citywideData21, false)"
                         title="Copy table to clipboard">
                         📋
@@ -484,7 +514,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                         </span>
                                     </div>
                                 </td>
-                                <td class="percentage-cell citywide-text">{{ item.percentage.toFixed(1) }}%</td>
+                                <td class="percentage-cell citywide-text">{{ formatPercent(item.percentage) }}%</td>
                             </tr>
                         </tbody>
                     </table>
@@ -505,6 +535,8 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
             <div class="chart-section">
                 <div class="chart-title">
                     <h3>2025 General</h3>
+                    <span class="total-votes">{{formatVotes(d3.sum(aggregateData25, (d: any) => d.votes))}} total
+                        votes</span>
                     <button class="copy-button" @click="copyTableToClipboard(aggregateData25, true)"
                         title="Copy table to clipboard">
                         📋
@@ -517,7 +549,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                             <tr>
                                 <th>Candidate</th>
                                 <th>Filtered %</th>
-                                <th>Citywide %</th>
+                                <th>Votes</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -532,9 +564,8 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                         </span>
                                     </div>
                                 </td>
-                                <td class="percentage-cell">{{ item.percentage.toFixed(1) }}%</td>
-                                <td class="percentage-cell citywide-cell citywide-text">{{citywideData25.find(c =>
-                                    c.name === item.name)?.percentage.toFixed(1)}}%</td>
+                                <td class="percentage-cell">{{ formatPercent(item.percentage) }}%</td>
+                                <td class="percentage-cell votes-cell">{{ formatVotes(item.votes) }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -546,6 +577,8 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
             <div class="chart-section">
                 <div class="chart-title">
                     <h3>2021 General</h3>
+                    <span class="total-votes">{{formatVotes(d3.sum(aggregateData21, (d: any) => d.votes))}} total
+                        votes</span>
                     <button class="copy-button" @click="copyTableToClipboard(aggregateData21, true)"
                         title="Copy table to clipboard">
                         📋
@@ -558,7 +591,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                             <tr>
                                 <th>Candidate</th>
                                 <th>Filtered %</th>
-                                <th>Citywide %</th>
+                                <th>Votes</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -573,9 +606,8 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                         </span>
                                     </div>
                                 </td>
-                                <td class="percentage-cell">{{ item.percentage.toFixed(1) }}%</td>
-                                <td class="percentage-cell citywide-cell citywide-text">{{citywideData21.find(c =>
-                                    c.name === item.name)?.percentage.toFixed(1)}}%</td>
+                                <td class="percentage-cell">{{ formatPercent(item.percentage) }}%</td>
+                                <td class="percentage-cell votes-cell">{{ formatVotes(item.votes) }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -601,6 +633,8 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                 <div class="chart-section">
                     <div class="chart-title">
                         <h3>2025 General</h3>
+                        <span class="total-votes">{{formatVotes(d3.sum(data25, (d: any) => d.votes))}} total
+                            votes</span>
                         <button class="copy-button" @click="copyTableToClipboard(data25, true)"
                             title="Copy table to clipboard">
                             📋
@@ -613,7 +647,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                 <tr>
                                     <th>Candidate</th>
                                     <th>ED %</th>
-                                    <th>Citywide %</th>
+                                    <th>Votes</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -629,9 +663,8 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                             </span>
                                         </div>
                                     </td>
-                                    <td class="percentage-cell">{{ item.percentage.toFixed(1) }}%</td>
-                                    <td class="percentage-cell citywide-cell citywide-text">{{citywideData25.find(c =>
-                                        c.name === item.name)?.percentage.toFixed(1)}}%</td>
+                                    <td class="percentage-cell">{{ formatPercent(item.percentage) }}%</td>
+                                    <td class="percentage-cell votes-cell">{{ formatVotes(item.votes) }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -642,6 +675,8 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                 <div class="chart-section">
                     <div class="chart-title">
                         <h3>2021 General</h3>
+                        <span class="total-votes">{{formatVotes(d3.sum(data21, (d: any) => d.votes))}} total
+                            votes</span>
                         <button class="copy-button" @click="copyTableToClipboard(data21, true)"
                             title="Copy table to clipboard">
                             📋
@@ -654,7 +689,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                 <tr>
                                     <th>Candidate</th>
                                     <th>ED %</th>
-                                    <th>Citywide %</th>
+                                    <th>Votes</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -670,15 +705,25 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                             </span>
                                         </div>
                                     </td>
-                                    <td class="percentage-cell">{{ item.percentage.toFixed(1) }}%</td>
-                                    <td class="percentage-cell citywide-cell citywide-text">{{citywideData21.find(c =>
-                                        c.name === item.name)?.percentage.toFixed(1)}}%</td>
+                                    <td class="percentage-cell">{{ formatPercent(item.percentage) }}%</td>
+                                    <td class="percentage-cell votes-cell">{{ formatVotes(item.votes) }}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Scale Mode Toggle -->
+        <div class="scale-toggle-container">
+            <label class="scale-toggle-label">
+                <input type="checkbox" v-model="scaleMode" true-value="votes" false-value="percentage"
+                    class="scale-toggle-checkbox" />
+                <span class="scale-toggle-text">
+                    Scale bars by vote count
+                </span>
+            </label>
         </div>
     </div>
 </template>
@@ -812,6 +857,12 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
     font-weight: 600;
 }
 
+.total-votes {
+    color: #666;
+    font-weight: 500;
+    font-family: monospace;
+}
+
 .chart-title p {
     margin: 0;
     display: flex;
@@ -895,11 +946,11 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
 
 .results-table td {
     padding: 2px 4px;
+    font-family: monospace;
 }
 
-.results-table td.citywide-cell {
-    background-color: #ebebeb;
-    color: rgb(140, 140, 140);
+.results-table td.votes-cell {
+    background-color: #f9f9f9;
 }
 
 .candidate-cell {
@@ -943,6 +994,35 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
 
 :deep(.vote-count) {
     fill: #666;
+}
+
+:deep(.bar-label) {
+    fill: #666;
+}
+
+/* Scale Toggle Styles */
+.scale-toggle-container {
+    position: sticky;
+    bottom: 0;
+    padding-top: 0.2rem;
+    border-top: 1px solid #e0e0e0;
+    background: linear-gradient(to top, white 80%, transparent);
+    margin-top: auto;
+}
+
+.scale-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+    font-family: monospace;
+}
+
+.scale-toggle-text {
+    font-size: 0.8rem;
+    color: #555;
+    font-weight: 500;
 }
 
 @media screen and (max-width: 600px) {
