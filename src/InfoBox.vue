@@ -24,11 +24,16 @@ const emit = defineEmits<{
 }>();
 
 const edLabel = computed(() => {
+    if (!props.hoveredData) return '';
+    
     const id = props.hoveredData?.properties[props.idKey]
+    const ntaName = props.hoveredData?.properties.nta_shortname
+    
     if (id) {
         const ad = String(id).slice(0, 2)
         const ed = String(id).slice(2)
-        return `ED ${ed} in AD ${ad}`
+        const baseLabel = `ED ${ed} in AD ${ad}`
+        return ntaName ? `${baseLabel} (${ntaName})` : baseLabel
     }
     return ''
 })
@@ -248,12 +253,12 @@ const copyTableToClipboard = async (data: any[], includeCitywide: boolean = fals
 };
 
 // Draw stacked bar chart with responsive width
-const drawStackedChart = (ref: any, data: any[]) => {
+const drawStackedChart = (ref: any, data: any[], maxVotes: number) => {
     if (!ref || data.length === 0) return;
 
     d3.select(ref).selectAll("*").remove();
 
-    const margin = { top: 0, right: 10, bottom: 25, left: 0 };
+    const margin = { top: 0, right: 10, bottom: 20, left: 0 };
     const width = containerWidth.value - margin.left - margin.right;
     const height = 10;
 
@@ -264,19 +269,16 @@ const drawStackedChart = (ref: any, data: any[]) => {
         .append('g')
         .attr('transform', `translate(${margin.left},${margin.top})`);
 
-    // Calculate cumulative positions using percentages
-    const total = d3.sum(data, (d: any) => d.percentage);
-    let cumulativePosition = 0;
+    let cumulativeVotes = 0;
     const segments = data.map((d: any) => {
-        const segWidth = (d.percentage / total) * 100;
-        const start = cumulativePosition;
-        cumulativePosition += segWidth;
-        return { ...d, start, width: segWidth };
+        const start = cumulativeVotes;
+        cumulativeVotes += d.votes;
+        return { ...d, start, votes: d.votes };
     });
 
-    // X scale (0-100 for percentages)
+    // X scale based on max votes (not percentages)
     const x = d3.scaleLinear()
-        .domain([0, 100])
+        .domain([0, maxVotes])
         .range([0, width]);
 
     // Draw stacked bar
@@ -287,7 +289,7 @@ const drawStackedChart = (ref: any, data: any[]) => {
         .attr('class', 'segment')
         .attr('x', (d: any) => x(d.start))
         .attr('y', 0)
-        .attr('width', (d: any) => x(d.width))
+        .attr('width', (d: any) => x(d.votes))
         .attr('height', height)
         .attr('fill', (d: any) => d3.rgb(d.color).brighter(0.4).toString())
         .attr('stroke', '#333')
@@ -299,17 +301,18 @@ const drawStackedChart = (ref: any, data: any[]) => {
         .enter()
         .append('text')
         .attr('class', 'vote-count')
-        .attr('x', (d: any) => x(d.start) + x(d.width) / 2)
-        .attr('y', (d: any, i: number) => 20 + (i % 2) * 10) // Stagger based on index
-        .attr('text-anchor', 'middle')
+        .attr('x', (d: any) => x(d.start))
+        .attr('y', (d: any, i: number) => 18 + (i % 2) * 8) // Stagger based on index
+        .attr('text-anchor', 'start')
         .attr('dy', '0.35em')
         .attr('font-size', '11px')
         .attr('font-weight', '500')
         .attr('font-family', 'monospace')
         .attr('fill', '#666')
         .text((d: any, i: number) => {
+            if (i !== 0 && Math.round(d.votes) < 2) return '';
             const roundedVoteCount = Math.round(d.votes).toLocaleString()
-            return i === 0 ? 'Votes: ' + roundedVoteCount : roundedVoteCount;
+            return i === 0 ? 'Votes:' + roundedVoteCount : roundedVoteCount;
         });
 };
 
@@ -337,30 +340,44 @@ const redrawCharts = () => {
 
     // Citywide default charts (when nothing is selected)
     if (showCitywideByDefault.value) {
+        const maxVotes25 = d3.sum(citywideData25.value, (d: any) => d.votes);
+        const maxVotes21 = d3.sum(citywideData21.value, (d: any) => d.votes);
+        const maxVotesCitywide = Math.max(maxVotes25, maxVotes21);
+        
         if (aggChart25Ref.value && citywideData25.value.length > 0) {
-            drawStackedChart(aggChart25Ref.value, citywideData25.value);
+            drawStackedChart(aggChart25Ref.value, citywideData25.value, maxVotesCitywide);
         }
         if (aggChart21Ref.value && citywideData21.value.length > 0) {
-            drawStackedChart(aggChart21Ref.value, citywideData21.value);
+            drawStackedChart(aggChart21Ref.value, citywideData21.value, maxVotesCitywide);
         }
         return;
     }
 
+    // Calculate max votes for ED charts
+    const maxVotes25ED = data25.value.length > 0 ? d3.sum(data25.value, (d: any) => d.votes) : 0;
+    const maxVotes21ED = data21.value.length > 0 ? d3.sum(data21.value, (d: any) => d.votes) : 0;
+    const maxVotesED = Math.max(maxVotes25ED, maxVotes21ED);
+
+    // Calculate max votes for aggregate charts
+    const maxVotes25Agg = aggregateData25.value.length > 0 ? d3.sum(aggregateData25.value, (d: any) => d.votes) : 0;
+    const maxVotes21Agg = aggregateData21.value.length > 0 ? d3.sum(aggregateData21.value, (d: any) => d.votes) : 0;
+    const maxVotesAgg = Math.max(maxVotes25Agg, maxVotes21Agg);
+
     // ED charts
     if (chart25Ref.value && data25.value.length > 0) {
-        drawStackedChart(chart25Ref.value, data25.value);
+        drawStackedChart(chart25Ref.value, data25.value, maxVotesED);
     }
     if (chart21Ref.value && data21.value.length > 0) {
-        drawStackedChart(chart21Ref.value, data21.value);
+        drawStackedChart(chart21Ref.value, data21.value, maxVotesED);
     }
 
     // Aggregate charts
     if (hasFilteredData.value) {
         if (aggChart25Ref.value && aggregateData25.value.length > 0) {
-            drawStackedChart(aggChart25Ref.value, aggregateData25.value);
+            drawStackedChart(aggChart25Ref.value, aggregateData25.value, maxVotesAgg);
         }
         if (aggChart21Ref.value && aggregateData21.value.length > 0) {
-            drawStackedChart(aggChart21Ref.value, aggregateData21.value);
+            drawStackedChart(aggChart21Ref.value, aggregateData21.value, maxVotesAgg);
         }
     }
 };
