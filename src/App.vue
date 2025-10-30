@@ -12,9 +12,9 @@ import { Index } from 'flexsearch';
 import cunygclogo from './cunygc_logo.png'
 
 import NYED_GEOM from './stores/nyed25c.json';
-import FILTER_DATA from './stores/filterdata.csv?raw'
+import FILTER_DATA_RAW from './stores/filterdata.csv?raw'
 import METADATA from './stores/metadata.json'
-import RESULTS_DATA from './stores/test25results.csv?raw'
+import RESULTS_DATA_RAW from './stores/test25results.csv?raw'
 
 import InfoBox from './InfoBox.vue'
 import Legend from './Legend.vue';
@@ -102,12 +102,12 @@ const SETTINGS = {
 }
 
 // generate properties.data
-const parsedFilterData = d3.csvParse(FILTER_DATA, d3.autoType) as any[];
+const parsedFilterData = d3.csvParse(FILTER_DATA_RAW, d3.autoType) as any[];
 const FILTER_PROPERTIES = new Map(
     parsedFilterData.map(({ ElectDist, ...rest }) => [String(ElectDist), rest])
 );
 
-const parsedResultsData = d3.csvParse(RESULTS_DATA, d3.autoType) as any[];
+const parsedResultsData = d3.csvParse(RESULTS_DATA_RAW, d3.autoType) as any[];
 const RESULTS_PROPERTIES = new Map(
     parsedResultsData.map(({ ElectDist, ...rest }) => [String(ElectDist), rest])
 );
@@ -160,6 +160,8 @@ const selectedFilters = ref<Array<{ column: string; label: string; short_label: 
 const searchQuery = ref('')
 const searchResults = ref<Array<{ column: string; label: string; short_label: string }>>([])
 const showSearchResults = ref(false)
+const showCityCouncil = ref(false)
+const showNYCHA = ref(false)
 
 // Initialize FlexSearch index
 const searchIndex = new Index({
@@ -295,6 +297,21 @@ onMounted(() => {
         new Promise(resolve => map.on('load', resolve))
     ]).then(() => {
 
+        // Add overlay sources
+        map.addSource('citycouncil-source', {
+            type: 'vector',
+            tiles: ['https://www.urbanresearchmaps.org/tiles/common.wrm_citycouncil.geom/{z}/{x}/{y}'],
+            minzoom: 0,
+            maxzoom: 14
+        });
+
+        map.addSource('nycha-source', {
+            type: 'vector',
+            tiles: ['https://www.urbanresearchmaps.org/tiles/common.wrm_nycha.geom/{z}/{x}/{y}'],
+            minzoom: 0,
+            maxzoom: 14
+        });
+
         // Add data and styles
         map.addSource('map-source', {
             type: 'geojson',
@@ -347,11 +364,102 @@ onMounted(() => {
             'filter': ['!', buildFilterExpression()]
         })
 
+        // Add City Council layers
+        map.addLayer({
+            'id': 'citycouncil-fill',
+            'type': 'fill',
+            'source': 'citycouncil-source',
+            'source-layer': 'common.wrm_citycouncil.geom',
+            'layout': {
+                'visibility': 'none'
+            },
+            'paint': {
+                'fill-color': 'transparent',
+                'fill-outline-color': '#000000'
+            }
+        });
+
+        map.addLayer({
+            'id': 'citycouncil-line',
+            'type': 'line',
+            'source': 'citycouncil-source',
+            'source-layer': 'common.wrm_citycouncil.geom',
+            'layout': {
+                'visibility': 'none'
+            },
+            'paint': {
+                'line-color': '#000000',
+                'line-width': 2
+            }
+        });
+
+        map.addLayer({
+            'id': 'citycouncil-label',
+            'type': 'symbol',
+            'source': 'citycouncil-source',
+            'source-layer': 'common.wrm_citycouncil.geom',
+            'layout': {
+                'visibility': 'none',
+                'text-field': ['get', 'districtid'],
+                'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+                'text-size': 14
+            },
+            'paint': {
+                'text-color': '#000000',
+                'text-halo-color': '#ffffff',
+                'text-halo-width': 2
+            }
+        });
+
+        // Add NYCHA layers
+        map.addLayer({
+            'id': 'nycha-fill',
+            'type': 'fill',
+            'source': 'nycha-source',
+            'source-layer': 'common.wrm_nycha.geom',
+            'layout': {
+                'visibility': 'none'
+            },
+            'paint': {
+                'fill-color': '#ff6b6b',
+                'fill-opacity': 0.3
+            }
+        });
+
+        map.addLayer({
+            'id': 'nycha-line',
+            'type': 'line',
+            'source': 'nycha-source',
+            'source-layer': 'common.wrm_nycha.geom',
+            'layout': {
+                'visibility': 'none'
+            },
+            'paint': {
+                'line-color': '#c92a2a',
+                'line-width': 1.5
+            }
+        });
+
         // Watch for filter changes and update the mask layer
         watch(selectedFilters, (newFilters) => {
             // @ts-ignore
             map.setFilter('map-mask', ['!', buildFilterExpression()]);
         }, { deep: true })
+
+        // Watch for City Council layer toggle
+        watch(showCityCouncil, (newValue) => {
+            const visibility = newValue ? 'visible' : 'none';
+            map.setLayoutProperty('citycouncil-fill', 'visibility', visibility);
+            map.setLayoutProperty('citycouncil-line', 'visibility', visibility);
+            map.setLayoutProperty('citycouncil-label', 'visibility', visibility);
+        });
+
+        // Watch for NYCHA layer toggle
+        watch(showNYCHA, (newValue) => {
+            const visibility = newValue ? 'visible' : 'none';
+            map.setLayoutProperty('nycha-fill', 'visibility', visibility);
+            map.setLayoutProperty('nycha-line', 'visibility', visibility);
+        });
 
 
         // Add hover interactions
@@ -472,14 +580,15 @@ onMounted(() => {
                 </div> -->
                 <InfoBox :hoveredData="hoveredData" :COLOR_SCALE="COLOR_SCALE" :idKey="SETTINGS.promoteId"
                     :filteredFeatures="filteredDistricts" :selectedFilters="selectedFilters" :allFeatures="features"
-                    @close="clearClickedId" />
+                    :metadata="METADATA" @close="clearClickedId" />
             </div>
             <div class="map-container">
                 <div id="map" class="map"></div>
                 <div class="cuny-logo-wrapper">
                     <img :src="cunygclogo" alt="CUNY Logo" class="cuny-logo">
                 </div>
-                <Legend :COLOR_SCALE="COLOR_SCALE"></Legend>
+                <Legend :COLOR_SCALE="COLOR_SCALE" :showCityCouncil="showCityCouncil" :showNYCHA="showNYCHA"
+                    @update:showCityCouncil="showCityCouncil = $event" @update:showNYCHA="showNYCHA = $event" />
             </div>
         </div>
 

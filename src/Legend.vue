@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-const { COLOR_SCALE } = defineProps(['COLOR_SCALE'])
+const { COLOR_SCALE, showCityCouncil, showNYCHA } = defineProps(['COLOR_SCALE', 'showCityCouncil', 'showNYCHA'])
+
+const emit = defineEmits<{
+    'update:showCityCouncil': [value: boolean]
+    'update:showNYCHA': [value: boolean]
+}>()
 
 // Detect if screen is mobile/small on mount
 const isMobile = ref(false)
@@ -34,6 +39,24 @@ function getLabelText(index: number) {
             {{ isExpanded ? 'Hide Legend' : 'Legend' }}
         </button>
         <div v-show="isExpanded" class="legend-content">
+            <!-- Layer Toggle Section -->
+            <div class="layer-toggle">
+                <div class="layer-toggle-header">Layers</div>
+                <div class="layer-toggle-options">
+                    <label class="layer-toggle-option">
+                        <input type="checkbox" :checked="showCityCouncil"
+                            @change="emit('update:showCityCouncil', ($event.target as HTMLInputElement).checked)" />
+                        <span>City Council</span>
+                    </label>
+                    <!-- <label class="layer-toggle-option">
+                        <input type="checkbox" :checked="showNYCHA"
+                            @change="emit('update:showNYCHA', ($event.target as HTMLInputElement).checked)" />
+                        <span>NYCHA</span>
+                    </label> -->
+                </div>
+            </div>
+
+            <!-- Legend Section -->
             <div class="legend">
                 <!-- Header row with candidate names -->
                 <div class="legend-header">
@@ -45,7 +68,8 @@ function getLabelText(index: number) {
                 </div>
 
                 <!-- swatches and labels -->
-                <div v-for="(breakpoint, index) in COLOR_SCALE.breakpoints.slice(0, -1)" :key="index" class="legend-row">
+                <div v-for="(breakpoint, index) in COLOR_SCALE.breakpoints.slice(0, -1)" :key="index"
+                    class="legend-row">
                     <div v-for="candidate in COLOR_SCALE.candidates" :key="`${candidate.id}-${index}`"
                         class="swatch-cell">
                         <span class="swatch" :style="`background-color: ${candidate.colors[index]}`"></span>
@@ -95,8 +119,54 @@ function getLabelText(index: number) {
     display: flex;
     flex-direction: column;
     align-items: end;
+    gap: 0.5rem;
 }
 
+/* Layer Toggle Styles */
+.layer-toggle {
+    pointer-events: auto;
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ccc;
+}
+
+.layer-toggle-header {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.35rem;
+}
+
+.layer-toggle-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.layer-toggle-option {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    color: #333;
+    cursor: pointer;
+    user-select: none;
+}
+
+.layer-toggle-option input[type="checkbox"] {
+    cursor: pointer;
+    width: 14px;
+    height: 14px;
+}
+
+.layer-toggle-option:hover {
+    color: #0066cc;
+}
+
+/* Legend Styles */
 .legend {
     display: table;
     border-collapse: collapse;
