@@ -309,7 +309,7 @@ onMounted(() => {
 
         map.addSource('nycha-source', {
             type: 'vector',
-            tiles: ['https://www.urbanresearchmaps.org/tiles/common.wrm_nycha.geom/{z}/{x}/{y}'],
+            tiles: ['https://www.urbanresearchmaps.org/tiles/common.nyc_nycha_dev_20251030.geom/{z}/{x}/{y}'],
             minzoom: 0,
             maxzoom: 14
         });
@@ -418,7 +418,7 @@ onMounted(() => {
             'id': 'nycha-fill',
             'type': 'fill',
             'source': 'nycha-source',
-            'source-layer': 'common.wrm_nycha.geom',
+            'source-layer': 'common.nyc_nycha_dev_20251030.geom',
             'layout': {
                 'visibility': 'none'
             },
@@ -432,13 +432,31 @@ onMounted(() => {
             'id': 'nycha-line',
             'type': 'line',
             'source': 'nycha-source',
-            'source-layer': 'common.wrm_nycha.geom',
+            'source-layer': 'common.nyc_nycha_dev_20251030.geom',
             'layout': {
                 'visibility': 'none'
             },
             'paint': {
                 'line-color': '#c92a2a',
                 'line-width': 1.5
+            }
+        });
+
+         map.addLayer({
+            'id': 'nycha-label',
+            'type': 'symbol',
+            'source': 'nycha-source',
+            'source-layer': 'common.nyc_nycha_dev_20251030.geom',
+            'layout': {
+                'visibility': 'none',
+                'text-field': ['get', 'developmen'],
+                'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+                'text-size': 10
+            },
+            'paint': {
+                'text-color': '#000000',
+                'text-halo-color': '#ffeeee',
+                'text-halo-width': 1
             }
         });
 
@@ -461,6 +479,7 @@ onMounted(() => {
             const visibility = newValue ? 'visible' : 'none';
             map.setLayoutProperty('nycha-fill', 'visibility', visibility);
             map.setLayoutProperty('nycha-line', 'visibility', visibility);
+            map.setLayoutProperty('nycha-label', 'visibility', visibility);
         });
 
 

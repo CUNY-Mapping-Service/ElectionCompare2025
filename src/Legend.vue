@@ -48,11 +48,11 @@ function getLabelText(index: number) {
                             @change="emit('update:showCityCouncil', ($event.target as HTMLInputElement).checked)" />
                         <span>City Council</span>
                     </label>
-                    <!-- <label class="layer-toggle-option">
+                    <label class="layer-toggle-option">
                         <input type="checkbox" :checked="showNYCHA"
                             @change="emit('update:showNYCHA', ($event.target as HTMLInputElement).checked)" />
                         <span>NYCHA</span>
-                    </label> -->
+                    </label>
                 </div>
             </div>
 
