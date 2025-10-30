@@ -9,7 +9,9 @@ import { isMapboxURL, transformMapboxUrl } from './libs/mapbox-transform';
 import * as d3 from "d3";
 import { Index } from 'flexsearch';
 
-import cunygclogo from './cunygc_logo.png'
+// import cunygclogo from './cunygc_logo.png'
+import cunygclogo from './cunygc_logo_transbg.png'
+
 
 import NYED_GEOM from './stores/nyed25c.json';
 import FILTER_DATA_RAW from './stores/filterdata.csv?raw'
@@ -585,7 +587,7 @@ onMounted(() => {
             <div class="map-container">
                 <div id="map" class="map"></div>
                 <div class="cuny-logo-wrapper">
-                    <img :src="cunygclogo" alt="CUNY Logo" class="cuny-logo">
+                    <a href="https://www.gc.cuny.edu/center-urban-research" target="_blank"><img :src="cunygclogo" alt="CUNY GC Logo" class="cuny-logo"></a>
                 </div>
                 <Legend :COLOR_SCALE="COLOR_SCALE" :showCityCouncil="showCityCouncil" :showNYCHA="showNYCHA"
                     @update:showCityCouncil="showCityCouncil = $event" @update:showNYCHA="showNYCHA = $event" />
@@ -860,7 +862,7 @@ body {
     top: 0;
     right: 0;
     padding: 0.2rem;
-    pointer-events: none;
+    /* pointer-events: none; */
 }
 
 .cuny-logo {
