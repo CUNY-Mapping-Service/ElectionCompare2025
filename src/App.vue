@@ -375,7 +375,7 @@ onMounted(() => {
                 'fill-opacity': 0.7,
             },
             'filter': ['!', buildFilterExpression()]
-        })
+        }, 'county-outline')
 
         // Add City Council layers
         map.addLayer({
