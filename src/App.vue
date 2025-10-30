@@ -35,26 +35,37 @@ const COLOR_SCALE = {
             // label for legend, needs to match win25
             'label': 'Zohran Mamdani',
             // each array needs to match the length of the breakpoints
+
+            //Blue palette via ColorBrewer
             'colors': ['#eff3ff', '#c6dbef', '#9ecae1', '#6baed6', '#3182bd', '#08519c']
         },
         {
             'id': 'gen25ac',
             'label': 'Andrew Cuomo',
+            //Green palette via ColorBrewer
             'colors': ['#edf8e9', '#c7e9c0', '#a1d99b', '#74c476', '#31a354', '#006d2c']
         },
-        {
+        /*         {
             'id': 'gen25cs',
             'label': 'Curtis Sliwa',
             'colors': ['#feedde', '#fdd0a2', '#fdae6b', '#fd8d3c', '#e6550d', '#a63603']
+        }, */
+        {
+            'id': 'gen25cs',
+            'label': 'Curtis Sliwa',
+            //Red palette via ColorBrewer
+            'colors': ['#fee5d9','#fcbba1','#fc9272','#fb6a4a','#de2d26','#a50f15']
         },
         {
             'id': 'gen25ea',
             'label': 'Eric Adams',
+            //Purple palette via ColorBrewer
             'colors': ['#f2f0f7', '#dadaeb', '#bcbddc', '#9e9ac8', '#756bb1', '#54278f']
         }
     ],
     'other': {
         'label': 'Other',
+        //Gray palette via ColorBrewer
         'colors': ['#f7f7f7', '#d9d9d9', '#bdbdbd', '#969696', '#636363', '#252525']
     }
 }
