@@ -465,13 +465,14 @@ onMounted(() => {
                     </div>
                 </div>
 
-                <div class="button-group">
+                <!-- <div class="button-group">
                     <button v-if="selectedFilters.length > 0" @click="clearFilters" class="clear-button">
                         Clear All Filters
                     </button>
-                </div>
+                </div> -->
                 <InfoBox :hoveredData="hoveredData" :COLOR_SCALE="COLOR_SCALE" :idKey="SETTINGS.promoteId"
-                    :filteredFeatures="filteredDistricts" :selectedFilters="selectedFilters" @close="clearClickedId" />
+                    :filteredFeatures="filteredDistricts" :selectedFilters="selectedFilters" :allFeatures="features"
+                    @close="clearClickedId" />
             </div>
             <div class="map-container">
                 <div id="map" class="map"></div>
@@ -505,7 +506,7 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
-    font-family: Roboto, Helvetica, Arial, sans-serif;    
+    font-family: Roboto, Helvetica, Arial, sans-serif;
 }
 
 @media (min-width: 768px) {

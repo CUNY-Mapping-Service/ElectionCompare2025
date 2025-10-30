@@ -15,6 +15,7 @@ interface Props {
     idKey: string;
     filteredFeatures?: any[]; // Array of all filtered district features
     selectedFilters?: Array<{ column: string; label: string; short_label: string }>;
+    allFeatures?: any[]; // Array of all features for citywide calculations
 }
 
 const props = defineProps<Props>();
@@ -32,8 +33,10 @@ const edLabel = computed(() => {
     return ''
 })
 
-const isVisible = computed(() => props.hoveredData !== null || hasFilteredData.value);
+const isVisible = computed(() => true); // Always show - display citywide by default
 const hasFilteredData = computed(() => props.filteredFeatures && props.filteredFeatures.length > 0);
+const hasCitywideData = computed(() => props.allFeatures && props.allFeatures.length > 0);
+const showCitywideByDefault = computed(() => !props.hoveredData && !hasFilteredData.value && hasCitywideData.value);
 
 // Compute filter labels for display
 const filterLabelsText = computed(() => {
@@ -81,7 +84,8 @@ const aggregateData25 = computed(() => {
             percentage: totalVotes > 0 ? (c.votes / totalVotes) * 100 : 0,
             color: c.color
         }))
-        .filter(d => d.votes > 0);
+        .filter(d => d.votes > 0)
+        .sort((a, b) => b.percentage - a.percentage);
 });
 
 const aggregateData21 = computed(() => {
@@ -108,7 +112,69 @@ const aggregateData21 = computed(() => {
             percentage: totalVotes > 0 ? (c.votes / totalVotes) * 100 : 0,
             color: c.color
         }))
-        .filter(d => d.votes > 0);
+        .filter(d => d.votes > 0)
+        .sort((a, b) => b.percentage - a.percentage);
+});
+
+// Citywide data computation for all features
+const citywideData25 = computed(() => {
+    if (!props.allFeatures || props.allFeatures.length === 0) return [];
+
+    const candidates = props.COLOR_SCALE.candidates;
+    const totals: { [key: string]: { votes: number, name: string, color: string } } = {};
+
+    candidates.forEach((c: any) => {
+        totals[c.id] = { votes: 0, name: c.label, color: c.colors[4] };
+    });
+
+    props.allFeatures.forEach(feature => {
+        candidates.forEach((c: any) => {
+            if (totals[c.id]) {
+                // @ts-ignore
+                totals[c.id].votes += feature.properties[c.id] || 0;
+            }
+        });
+    });
+
+    const totalVotes = Object.values(totals).reduce((sum, c) => sum + c.votes, 0);
+
+    return Object.values(totals)
+        .map(c => ({
+            name: c.name,
+            votes: c.votes,
+            percentage: totalVotes > 0 ? (c.votes / totalVotes) * 100 : 0,
+            color: c.color
+        }))
+        .filter(d => d.votes > 0)
+        .sort((a, b) => b.percentage - a.percentage);
+});
+
+const citywideData21 = computed(() => {
+    if (!props.allFeatures || props.allFeatures.length === 0) return [];
+
+    const totals = {
+        ea: { votes: 0, name: 'Eric Adams', color: props.COLOR_SCALE.candidates[3].colors[4] },
+        cs: { votes: 0, name: 'Curtis Sliwa', color: props.COLOR_SCALE.candidates[2].colors[4] },
+        other: { votes: 0, name: 'Other', color: props.COLOR_SCALE.other.colors[4] }
+    };
+
+    props.allFeatures.forEach(feature => {
+        totals.ea.votes += feature.properties.gen21ea || 0;
+        totals.cs.votes += feature.properties.gen21cs || 0;
+        totals.other.votes += feature.properties.gen21othr || 0;
+    });
+
+    const totalVotes = Object.values(totals).reduce((sum, c) => sum + c.votes, 0);
+
+    return Object.values(totals)
+        .map(c => ({
+            name: c.name,
+            votes: c.votes,
+            percentage: totalVotes > 0 ? (c.votes / totalVotes) * 100 : 0,
+            color: c.color
+        }))
+        .filter(d => d.votes > 0)
+        .sort((a, b) => b.percentage - a.percentage);
 });
 
 // Prepare data for 2025 election - using percentage data
@@ -124,7 +190,8 @@ const data25 = computed(() => {
             votes: props.hoveredData!.properties[c.id] || 0,
             color: c.colors[4],
         }))
-        .filter((d: any) => d.votes > 0);
+        .filter((d: any) => d.votes > 0)
+        .sort((a: any, b: any) => b.percentage - a.percentage);
 });
 
 // Prepare data for 2021 election - using percentage data
@@ -151,45 +218,44 @@ const data21 = computed(() => {
             color: props.COLOR_SCALE.other.colors[4],
         }
     ]
-        .filter((d: any) => d.votes > 0);
+        .filter((d: any) => d.votes > 0)
+        .sort((a: any, b: any) => b.percentage - a.percentage);
 });
 
-// Get winner labels
-const winner25 = computed(() => props.hoveredData?.properties.win25 || '');
-const winner21 = computed(() => props.hoveredData?.properties.win21 || '');
+// Copy table to clipboard
+const copyTableToClipboard = async (data: any[], includeCitywide: boolean = false) => {
+    let headers: string[];
+    let rows: string[];
 
-// Get aggregate winners
-const aggregateWinner25 = computed(() => {
-    if (aggregateData25.value.length === 0) return '';
-    return aggregateData25.value.reduce((a, b) => a.votes > b.votes ? a : b).name;
-});
-
-const aggregateWinner21 = computed(() => {
-    if (aggregateData21.value.length === 0) return '';
-    return aggregateData21.value.reduce((a, b) => a.votes > b.votes ? a : b).name;
-});
-
-// Find winner color
-const getWinnerColor = (winner: string, year: string) => {
-    if (year === '2025') {
-        const candidate = props.COLOR_SCALE.candidates.find((c: any) => c.label === winner);
-        return candidate?.colors[4] || '#999';
+    if (includeCitywide) {
+        // For filtered or ED views with citywide comparison
+        const viewType = hasFilteredData.value ? 'Filtered %' : 'ED %';
+        headers = ['Candidate', viewType, 'Citywide %'];
+        rows = data.map(d => {
+            const citywideMatch = (hasFilteredData.value ? citywideData25 : citywideData25).value.find(c => c.name === d.name);
+            const citywidePercent = citywideMatch ? citywideMatch.percentage.toFixed(1) + '%' : 'N/A';
+            return `${d.name}\t${d.percentage.toFixed(1)}%\t${citywidePercent}`;
+        });
     } else {
-        if (winner === 'Eric Adams') return props.COLOR_SCALE.candidates[3].colors[4];
-        if (winner === 'Curtis Sliwa') return props.COLOR_SCALE.candidates[2].colors[4];
-        return '#999';
+        // For citywide only view
+        headers = ['Candidate', 'Citywide %'];
+        rows = data.map(d => `${d.name}\t${d.percentage.toFixed(1)}%`);
     }
+
+    const text = [headers.join('\t'), ...rows].join('\n');
+    await navigator.clipboard.writeText(text);
+
 };
 
 // Draw stacked bar chart with responsive width
-const drawStackedChart = (ref: any, data: any[], year: string, winner: string) => {
+const drawStackedChart = (ref: any, data: any[]) => {
     if (!ref || data.length === 0) return;
 
     d3.select(ref).selectAll("*").remove();
 
-    const margin = { top: 0, right: 20, bottom: 20, left: 20 };
+    const margin = { top: 0, right: 10, bottom: 25, left: 0 };
     const width = containerWidth.value - margin.left - margin.right;
-    const height = 40;
+    const height = 10;
 
     const svg = d3.select(ref)
         .append('svg')
@@ -222,41 +288,28 @@ const drawStackedChart = (ref: any, data: any[], year: string, winner: string) =
         .attr('x', (d: any) => x(d.start))
         .attr('y', 0)
         .attr('width', (d: any) => x(d.width))
-        .attr('height', 40)
+        .attr('height', height)
         .attr('fill', (d: any) => d3.rgb(d.color).brighter(0.4).toString())
         .attr('stroke', '#333')
         .attr('stroke-width', 1);
 
-    // Labels on bar
-    svg.selectAll('.bar-label')
-        .data(segments.filter(d => d.percentage >= 5))
+    // Vote counts below bar
+    svg.selectAll('.vote-count')
+        .data(segments)
         .enter()
         .append('text')
-        .attr('class', 'bar-label')
+        .attr('class', 'vote-count')
         .attr('x', (d: any) => x(d.start) + x(d.width) / 2)
-        .attr('y', 20)
+        .attr('y', (d: any, i: number) => 20 + (i % 2) * 10) // Stagger based on index
         .attr('text-anchor', 'middle')
         .attr('dy', '0.35em')
         .attr('font-size', '11px')
-        .attr('font-weight', 'bold')
-        .attr('fill', '#000')
-        .text((d: any) => `${d.percentage.toFixed(1)}%`);
-
-    // Legend below bar - showing both percentage and vote count
-    const legendY = 60;
-    const legendData = data;
-    svg.selectAll('.legend-item')
-        .data(legendData)
-        .enter()
-        .append('g')
-        .attr('class', 'legend-item')
-        .attr('transform', (d: any, i: number) => `translate(${(width / legendData.length) * i}, ${legendY})`)
-        .each(function (d: any) {
-            d3.select(this)
-                .append('text')
-                .attr('font-size', '11px')
-                .attr('font-weight', '500')
-                .text(`${d?.name?.split(' ')[1] ?? 'Other'} (${Math.round(d.votes).toLocaleString()})`);
+        .attr('font-weight', '500')
+        .attr('font-family', 'monospace')
+        .attr('fill', '#666')
+        .text((d: any, i: number) => {
+            const roundedVoteCount = Math.round(d.votes).toLocaleString()
+            return i === 0 ? 'Votes: ' + roundedVoteCount : roundedVoteCount;
         });
 };
 
@@ -282,21 +335,32 @@ const debounce = (func: () => void, wait: number) => {
 const redrawCharts = () => {
     updateContainerWidth();
 
+    // Citywide default charts (when nothing is selected)
+    if (showCitywideByDefault.value) {
+        if (aggChart25Ref.value && citywideData25.value.length > 0) {
+            drawStackedChart(aggChart25Ref.value, citywideData25.value);
+        }
+        if (aggChart21Ref.value && citywideData21.value.length > 0) {
+            drawStackedChart(aggChart21Ref.value, citywideData21.value);
+        }
+        return;
+    }
+
     // ED charts
     if (chart25Ref.value && data25.value.length > 0) {
-        drawStackedChart(chart25Ref.value, data25.value, '2025', winner25.value);
+        drawStackedChart(chart25Ref.value, data25.value);
     }
     if (chart21Ref.value && data21.value.length > 0) {
-        drawStackedChart(chart21Ref.value, data21.value, '2021', winner21.value);
+        drawStackedChart(chart21Ref.value, data21.value);
     }
 
     // Aggregate charts
     if (hasFilteredData.value) {
         if (aggChart25Ref.value && aggregateData25.value.length > 0) {
-            drawStackedChart(aggChart25Ref.value, aggregateData25.value, '2025', aggregateWinner25.value);
+            drawStackedChart(aggChart25Ref.value, aggregateData25.value);
         }
         if (aggChart21Ref.value && aggregateData21.value.length > 0) {
-            drawStackedChart(aggChart21Ref.value, aggregateData21.value, '2021', aggregateWinner21.value);
+            drawStackedChart(aggChart21Ref.value, aggregateData21.value);
         }
     }
 };
@@ -317,7 +381,7 @@ onMounted(() => {
     };
 });
 
-watch([data25, data21, aggregateData25, aggregateData21, containerWidth, isVisible], () => {
+watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywideData21, containerWidth, isVisible, showCitywideByDefault], () => {
     if (!isVisible.value) return;
 
     // Wait a tick 
@@ -329,10 +393,94 @@ watch([data25, data21, aggregateData25, aggregateData21, containerWidth, isVisib
 
 <template>
     <div ref="container" class="infobox-container" v-if="isVisible">
+        <!-- Citywide Default View - show when nothing is selected -->
+        <div v-if="showCitywideByDefault" class="citywide-section">
+            <div class="section-header">
+                <p class="section-subtitle-text-body-1">Citywide Results - All Election Districts</p>
+            </div>
+
+            <!-- 2025 Citywide -->
+            <div class="chart-section">
+                <div class="chart-title">
+                    <h3>2025 General</h3>
+                    <button class="copy-button" @click="copyTableToClipboard(citywideData25, false)"
+                        title="Copy table to clipboard">
+                        📋
+                    </button>
+                </div>
+                <div ref="aggChart25"></div>
+                <div class="results-table-container">
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>Candidate</th>
+                                <th>Citywide %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(item, index) in citywideData25" :key="index">
+                                <td>
+                                    <div class="candidate-cell">
+                                        <span class="color-indicator" :style="{ backgroundColor: item.color }"></span>
+                                        <span>{{ item.name }}</span>
+                                        <span v-if="index === 0" class="margin-indicator">
+                                            +{{ Math.round((citywideData25[0]?.percentage || 0) -
+                                                (citywideData25[1]?.percentage || 0)) }}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td class="percentage-cell citywide-text">{{ item.percentage.toFixed(1) }}%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+
+            <!-- 2021 Citywide -->
+            <div class="chart-section">
+                <div class="chart-title">
+                    <h3>2021 General</h3>
+                    <button class="copy-button" @click="copyTableToClipboard(citywideData21, false)"
+                        title="Copy table to clipboard">
+                        📋
+                    </button>
+                </div>
+                <div ref="aggChart21"></div>
+                <div class="results-table-container">
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>Candidate</th>
+                                <th>Citywide %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(item, index) in citywideData21" :key="index">
+                                <td>
+                                    <div class="candidate-cell">
+                                        <span class="color-indicator" :style="{ backgroundColor: item.color }"></span>
+                                        <span>{{ item.name }}</span>
+                                        <span v-if="index === 0" class="margin-indicator">
+                                            +{{ Math.round((citywideData21[0]?.percentage || 0) -
+                                                (citywideData21[1]?.percentage || 0)) }}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td class="percentage-cell citywide-text">{{ item.percentage.toFixed(1) }}%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+
         <!-- Aggregate Charts - show when filters are active -->
         <div v-if="hasFilteredData" class="aggregate-section">
             <div class="section-header">
-                <p class="section-subtitle-text-body-1">Combined results from {{ filteredFeatures?.length.toLocaleString() }} filtered election districts:</p>
+                <p class="section-subtitle-text-body-1">Combined results from {{
+                    filteredFeatures?.length.toLocaleString() }} filtered election districts:</p>
                 <p class="section-subtitle-text-body-2">{{ filterLabelsText }}</p>
             </div>
 
@@ -340,28 +488,82 @@ watch([data25, data21, aggregateData25, aggregateData21, containerWidth, isVisib
             <div class="chart-section">
                 <div class="chart-title">
                     <h3>2025 General</h3>
-                    <p>
-                        Winner: <span class="winner-pill"
-                            :style="{ backgroundColor: getWinnerColor(aggregateWinner25, '2025') }">
-                            {{ aggregateWinner25 }}
-                        </span>
-                    </p>
+                    <button class="copy-button" @click="copyTableToClipboard(aggregateData25, true)"
+                        title="Copy table to clipboard">
+                        📋
+                    </button>
                 </div>
                 <div ref="aggChart25"></div>
+                <div class="results-table-container">
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>Candidate</th>
+                                <th>Filtered %</th>
+                                <th>Citywide %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(item, index) in aggregateData25" :key="index">
+                                <td>
+                                    <div class="candidate-cell">
+                                        <span class="color-indicator" :style="{ backgroundColor: item.color }"></span>
+                                        <span>{{ item.name }}</span>
+                                        <span v-if="index === 0 && aggregateData25.length > 1" class="margin-indicator">
+                                            +{{ Math.round((aggregateData25[0]?.percentage || 0) -
+                                                (aggregateData25[1]?.percentage || 0)) }}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td class="percentage-cell">{{ item.percentage.toFixed(1) }}%</td>
+                                <td class="percentage-cell citywide-cell citywide-text">{{citywideData25.find(c =>
+                                    c.name === item.name)?.percentage.toFixed(1)}}%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
             </div>
 
             <!-- 2021 Aggregate -->
             <div class="chart-section">
                 <div class="chart-title">
                     <h3>2021 General</h3>
-                    <p>
-                        Winner: <span class="winner-pill"
-                            :style="{ backgroundColor: getWinnerColor(aggregateWinner21, '2021') }">
-                            {{ aggregateWinner21 }}
-                        </span>
-                    </p>
+                    <button class="copy-button" @click="copyTableToClipboard(aggregateData21, true)"
+                        title="Copy table to clipboard">
+                        📋
+                    </button>
                 </div>
                 <div ref="aggChart21"></div>
+                <div class="results-table-container">
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>Candidate</th>
+                                <th>Filtered %</th>
+                                <th>Citywide %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(item, index) in aggregateData21" :key="index">
+                                <td>
+                                    <div class="candidate-cell">
+                                        <span class="color-indicator" :style="{ backgroundColor: item.color }"></span>
+                                        <span>{{ item.name }}</span>
+                                        <span v-if="index === 0 && aggregateData21.length > 1" class="margin-indicator">
+                                            +{{ Math.round((aggregateData21[0]?.percentage || 0) -
+                                                (aggregateData21[1]?.percentage || 0)) }}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td class="percentage-cell">{{ item.percentage.toFixed(1) }}%</td>
+                                <td class="percentage-cell citywide-cell citywide-text">{{citywideData21.find(c =>
+                                    c.name === item.name)?.percentage.toFixed(1)}}%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
             </div>
         </div>
         <div class="header" v-if="hoveredData">
@@ -382,28 +584,82 @@ watch([data25, data21, aggregateData25, aggregateData21, containerWidth, isVisib
                 <div class="chart-section">
                     <div class="chart-title">
                         <h3>2025 General</h3>
-                        <p>
-                            ED winner: <span class="winner-pill"
-                                :style="{ backgroundColor: getWinnerColor(winner25, '2025') }">
-                                {{ winner25 }}
-                            </span>
-                        </p>
+                        <button class="copy-button" @click="copyTableToClipboard(data25, true)"
+                            title="Copy table to clipboard">
+                            📋
+                        </button>
                     </div>
                     <div ref="chart25"></div>
+                    <div class="results-table-container">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Candidate</th>
+                                    <th>ED %</th>
+                                    <th>Citywide %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(item, index) in data25" :key="index">
+                                    <td>
+                                        <div class="candidate-cell">
+                                            <span class="color-indicator"
+                                                :style="{ backgroundColor: item.color }"></span>
+                                            <span>{{ item.name }}</span>
+                                            <span v-if="index === 0 && data25.length > 1" class="margin-indicator">
+                                                +{{ Math.round((data25[0]?.percentage || 0) - (data25[1]?.percentage ||
+                                                    0)) }}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="percentage-cell">{{ item.percentage.toFixed(1) }}%</td>
+                                    <td class="percentage-cell citywide-cell citywide-text">{{citywideData25.find(c =>
+                                        c.name === item.name)?.percentage.toFixed(1)}}%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <!-- 2021 Election Chart -->
                 <div class="chart-section">
                     <div class="chart-title">
                         <h3>2021 General</h3>
-                        <p>
-                            ED winner: <span class="winner-pill"
-                                :style="{ backgroundColor: getWinnerColor(winner21, '2021') }">
-                                {{ winner21 }}
-                            </span>
-                        </p>
+                        <button class="copy-button" @click="copyTableToClipboard(data21, true)"
+                            title="Copy table to clipboard">
+                            📋
+                        </button>
                     </div>
                     <div ref="chart21"></div>
+                    <div class="results-table-container">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Candidate</th>
+                                    <th>ED %</th>
+                                    <th>Citywide %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(item, index) in data21" :key="index">
+                                    <td>
+                                        <div class="candidate-cell">
+                                            <span class="color-indicator"
+                                                :style="{ backgroundColor: item.color }"></span>
+                                            <span>{{ item.name }}</span>
+                                            <span v-if="index === 0 && data21.length > 1" class="margin-indicator">
+                                                +{{ Math.round((data21[0]?.percentage || 0) - (data21[1]?.percentage ||
+                                                    0)) }}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="percentage-cell">{{ item.percentage.toFixed(1) }}%</td>
+                                    <td class="percentage-cell citywide-cell citywide-text">{{citywideData21.find(c =>
+                                        c.name === item.name)?.percentage.toFixed(1)}}%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -421,9 +677,9 @@ watch([data25, data21, aggregateData25, aggregateData21, containerWidth, isVisib
 }
 
 .header {
-    margin: 0.2rem 0.1rem;
-    padding: 1rem;
-    outline: dashed rgb(0, 112, 240) 0.5px;
+    margin: 1rem 2px;
+    padding: 0.2rem 0.5rem;
+    outline: dashed rgb(0, 112, 240) 2px;
 }
 
 .header-content {
@@ -478,6 +734,12 @@ watch([data25, data21, aggregateData25, aggregateData21, containerWidth, isVisib
     gap: 1.5rem;
 }
 
+.citywide-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
 .ed-section {
     display: flex;
     flex-direction: column;
@@ -493,24 +755,20 @@ watch([data25, data21, aggregateData25, aggregateData21, containerWidth, isVisib
 
 .section-subtitle-text-body-1 {
     margin: 4px 0 0 0;
-/*     font-size: 12px;
-    font-style: italic; */
     color: #666;
-font-size: 1rem;
-font-weight: 600;
-line-height: 1.5;
-letter-spacing: 0.03125em;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.5;
+    letter-spacing: 0.03125em;
 }
 
 .section-subtitle-text-body-2 {
     margin: 4px 0 0 0;
-/*     font-size: 12px;
-    font-style: italic; */
     color: #666;
-font-size: 0.875rem;
-font-weight: 400;
-line-height: 1.425;
-letter-spacing: 0.0178571429em;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.425;
+    letter-spacing: 0.0178571429em;
 }
 
 .divider {
@@ -554,6 +812,109 @@ letter-spacing: 0.0178571429em;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
+/* Results Table Styles */
+.results-table-container {
+    position: relative;
+}
+
+.copy-button {
+    border: none;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: #ffffff;
+    border-radius: 8px;
+}
+
+.copy-button:hover {
+    background-color: #e8e8e8;
+    border-color: #ccc;
+}
+
+.copy-button:active {
+    background-color: #ddd;
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background-color: white;
+    border-left: none;
+    border-right: none;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+}
+
+.results-table thead {
+    background-color: #f5f5f5;
+}
+
+.results-table th {
+    padding: 6px 8px;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 1px solid #ddd;
+    font-size: 12px;
+}
+
+.results-table :not(:first-child) {
+    text-align: right;
+}
+
+
+.results-table tbody tr {
+    border-bottom: 1px solid #eee;
+}
+
+.results-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.results-table tbody tr:hover {
+    background-color: #fafafa;
+}
+
+.results-table td {
+    padding: 2px 4px;
+}
+
+.results-table td.citywide-cell {
+    background-color: #ebebeb;
+    color: rgb(140, 140, 140);
+}
+
+.candidate-cell {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.color-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.margin-indicator {
+    font-weight: 700;
+    font-size: 12px;
+    color: #333;
+    margin-left: 4px;
+}
+
+.percentage-cell {
+    font-weight: 500;
+    color: #333;
+    text-align: right;
+}
+
+.citywide-text {
+    color: #666;
+}
+
 :deep(.segment) {
     stroke: #333;
 }
@@ -563,16 +924,16 @@ letter-spacing: 0.0178571429em;
     cursor: pointer;
 }
 
-:deep(.bar-label) {
-    fill: #000;
-    font-weight: bold;
-}
-
-:deep(.legend-item) {
-    font-size: 11px;
+:deep(.vote-count) {
+    fill: #666;
 }
 
 @media screen and (max-width: 600px) {
+    .infobox-container {
+        padding-right: 0.2rem;
+        /* scroll bar */
+    }
+
     .header h3 {
         font-size: 14px;
     }
