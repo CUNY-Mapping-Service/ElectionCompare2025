@@ -10,7 +10,7 @@ import * as d3 from "d3";
 import { Index } from 'flexsearch';
 
 // import cunygclogo from './cunygc_logo.png'
-import cunygclogo from './cunygc_logo_transbg.png'
+import cunygclogo from './cunygc_logo_cur.png'
 
 
 import NYED_GEOM from './stores/nyed25c.json';
