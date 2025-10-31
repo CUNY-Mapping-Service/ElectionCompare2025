@@ -658,7 +658,7 @@ onMounted(() => {
     <div id="main">
         <div class="comparison-container">
             <div class="details">
-                <h2>2025 General Election -50deg Mayor</h2>
+                <h2>2025 General Election - Mayor</h2>
                 <h3>Vote share by election district</h3>
 
                 <div class="filters-section">
