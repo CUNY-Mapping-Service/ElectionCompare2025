@@ -532,8 +532,8 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
         <!-- Aggregate Charts - show when filters are active -->
         <div v-if="hasFilteredData" class="aggregate-section">
             <div class="section-header">
-                <p class="section-subtitle-text-body-1">Combined results from {{
-                    filteredFeatures?.length.toLocaleString() }} filtered election districts:</p>
+                <p class="section-subtitle-text-body-1">Filtered results ({{
+                    filteredFeatures?.length.toLocaleString() }} election districts):</p>
                 <p class="section-subtitle-text-body-2">{{ filterLabelsText }}</p>
             </div>
 
@@ -549,7 +549,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                     </button>
                 </div>
                 <span class="total-votes">{{formatVotes(d3.sum(aggregateData25, (d: any) => d.votes))}} total
-                        votes</span>
+                        votes in filtered EDs</span>
                 <div ref="aggChart25"></div>
                 <div class="results-table-container">
                     <table class="results-table">
@@ -584,14 +584,16 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
             <!-- 2021 Aggregate -->
             <div class="chart-section">
                 <div class="chart-title">
-                    <h3>2021 General</h3>
-                    <span class="total-votes">{{formatVotes(d3.sum(aggregateData21, (d: any) => d.votes))}} total
-                        votes</span>
+                    <h3>2021 General (allocated to 2025 EDs)</h3>
+                    <!-- <span class="total-votes">{{formatVotes(d3.sum(aggregateData21, (d: any) => d.votes))}} total
+                        votes</span> -->
                     <button class="copy-button" @click="copyTableToClipboard(aggregateData21, true)"
                         title="Copy table to clipboard">
                         📋
                     </button>
                 </div>
+                <span class="total-votes">{{formatVotes(d3.sum(aggregateData21, (d: any) => d.votes))}} total
+                        votes in filtered EDs</span>
                 <div ref="aggChart21"></div>
                 <div class="results-table-container">
                     <table class="results-table">
@@ -640,7 +642,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                 <!-- 2025 Election Chart -->
                 <div class="chart-section">
                     <div class="chart-title">
-                        <h3 style="margin-top: 10px;">2025 General (unofficial results)</h3>
+                        <h3>2025 General (unofficial results)</h3>
                         <!-- <span class="total-votes">{{formatVotes(d3.sum(data25, (d: any) => d.votes))}} total
                             votes</span> -->
                         <button class="copy-button" @click="copyTableToClipboard(data25, true)"
@@ -649,7 +651,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                         </button>
                     </div>
                     <span class="total-votes">{{formatVotes(d3.sum(data25, (d: any) => d.votes))}} total
-                            votes</span>
+                            votes in ED {{  }}</span>
                     <div ref="chart25"></div>
                     <div class="results-table-container">
                         <table class="results-table">
@@ -684,14 +686,14 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                 <!-- 2021 Election Chart -->
                 <div class="chart-section">
                     <div class="chart-title">
-                        <h3>2021 General</h3>
-                        <span class="total-votes">{{formatVotes(d3.sum(data21, (d: any) => d.votes))}} total
-                            votes</span>
+                        <h3>2021 General (allocated to 2025 EDs)</h3>
                         <button class="copy-button" @click="copyTableToClipboard(data21, true)"
                             title="Copy table to clipboard">
                             📋
                         </button>
                     </div>
+                    <span class="total-votes">{{formatVotes(d3.sum(data21, (d: any) => d.votes))}} total
+                            votes in ED {{  }}</span>
                     <div ref="chart21"></div>
                     <div class="results-table-container">
                         <table class="results-table">
