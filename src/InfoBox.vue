@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
 import * as d3 from 'd3';
 
-const formatPercent = d3.format('.1f'); 
+const formatPercent = d3.format('.1f');
 const formatVotes = d3.format(',.0f');
 
 interface FeatureProperties {
@@ -79,6 +79,16 @@ const aggregateData25 = computed(() => {
         totals[c.id] = { votes: 0, name: c.label, color: c.colors[4] };
     });
 
+    // Add 'other' to totals
+    const otherScale = props.COLOR_SCALE.other;
+
+    totals[otherScale.id] = {
+        votes: 0,
+        name: otherScale.label,
+        color: otherScale.colors[4]
+    };
+
+
     props.filteredFeatures!.forEach(feature => {
         candidates.forEach((c: any) => {
             if (totals[c.id]) {
@@ -86,6 +96,9 @@ const aggregateData25 = computed(() => {
                 totals[c.id].votes += feature.properties[c.id] || 0;
             }
         });
+        // Add other votes
+        // @ts-ignore
+        totals[otherScale.id].votes += feature.properties[otherScale.id] || 0;
     });
 
     const totalVotes = Object.values(totals).reduce((sum, c) => sum + c.votes, 0);
@@ -140,6 +153,14 @@ const citywideData25 = computed(() => {
         totals[c.id] = { votes: 0, name: c.label, color: c.colors[4] };
     });
 
+    // Add 'other' to totals
+    const otherScale = props.COLOR_SCALE.other;
+    totals[otherScale.id] = {
+        votes: 0,
+        name: props.COLOR_SCALE.other.label,
+        color: props.COLOR_SCALE.other.colors[4]
+    };
+
     props.allFeatures.forEach(feature => {
         candidates.forEach((c: any) => {
             if (totals[c.id]) {
@@ -147,6 +168,9 @@ const citywideData25 = computed(() => {
                 totals[c.id].votes += feature.properties[c.id] || 0;
             }
         });
+        // Add other votes
+        // @ts-ignore
+        totals[otherScale.id].votes += feature.properties[props.COLOR_SCALE.other.id] || 0;
     });
 
     const totalVotes = Object.values(totals).reduce((sum, c) => sum + c.votes, 0);
@@ -196,13 +220,19 @@ const data25 = computed(() => {
 
     const candidates = props.COLOR_SCALE.candidates;
 
-    return candidates
+    return [...candidates
         .map((c: any) => ({
             name: c.label,
             percentage: props.hoveredData!.properties[`${c.id}_pct`] || 0,
             votes: props.hoveredData!.properties[c.id] || 0,
             color: c.colors[4],
-        }))
+        })),
+    {
+        name: props.COLOR_SCALE.other.label,
+        percentage: props.hoveredData!.properties[`${props.COLOR_SCALE.other.id}_pct`] || 0,
+        votes: props.hoveredData!.properties[props.COLOR_SCALE.other.id] || 0,
+        color: props.COLOR_SCALE.other.colors[4],
+    }]
         .filter((d: any) => d.votes > 0)
         .sort((a: any, b: any) => b.percentage - a.percentage);
 });
@@ -241,14 +271,14 @@ const copyTableToClipboard = async (data: any[], includeCitywide: boolean = fals
     let rows: string[];
 
     if (includeCitywide) {
-        // For filtered or ED views with vote counts
-        const viewType = hasFilteredData.value ? 'Filtered %' : 'ED %';
+        // Determine view type based on filtered data
+        const viewType = hasFilteredData.value ? 'Filtered %' : 'Citywide %';
         headers = ['Candidate', viewType, 'Votes'];
         rows = data.map(d => {
             return `${d.name}\t${formatPercent(d.percentage)}%\t${formatVotes(d.votes)}`;
         });
     } else {
-        // For citywide only view
+        // For citywide only view (shouldn't be used anymore)
         headers = ['Candidate', 'Citywide %'];
         rows = data.map(d => `${d.name}\t${formatPercent(d.percentage)}%`);
     }
@@ -264,7 +294,7 @@ const drawStackedChart = (ref: any, data: any[], maxVotes: number) => {
 
     d3.select(ref).selectAll("*").remove();
 
-    const margin = { top: 0, right: 20, bottom: 20, left: 0 };
+    const margin = { top: 0, right: 25, bottom: 22, left: 0 };
     const width = containerWidth.value - margin.left - margin.right;
     const height = 10;
 
@@ -326,11 +356,11 @@ const drawStackedChart = (ref: any, data: any[], maxVotes: number) => {
         .append('text')
         .attr('class', 'bar-label')
         .attr('x', (d: any) => x(d.start))
-        .attr('y', (d: any, i: number) => 18 + (i % 2) * 8) // Stagger based on index
+        .attr('y', (d: any, i: number) => 18 + (i % 2) * 10) // Stagger based on index
         .attr('text-anchor', 'start')
         .attr('dy', '0.35em')
         .attr('font-size', '12px')
-        .attr('font-weight', '600')
+        .attr('font-weight', '400')
         .attr('font-family', 'monospace')
         .attr('fill', '#666')
         .text((d: any, i: number) => {
@@ -448,15 +478,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
             <div class="chart-section">
                 <div class="chart-title">
                     <h3>2025 General (unofficial results)</h3>
-                    <!-- <span class="total-votes">{{formatVotes(d3.sum(citywideData25, (d: any) => d.votes))}} total
-                        votes</span> -->
-                    <button class="copy-button" @click="copyTableToClipboard(citywideData25, false)"
-                        title="Copy table to clipboard">
-                        📋
-                    </button>
                 </div>
-                <span class="total-votes">{{formatVotes(d3.sum(citywideData25, (d: any) => d.votes))}} total
-                        votes</span>
                 <div ref="aggChart25"></div>
                 <div class="results-table-container">
                     <table class="results-table">
@@ -464,6 +486,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                             <tr>
                                 <th>Candidate</th>
                                 <th>Citywide %</th>
+                                <th>Votes</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -479,8 +502,24 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                     </div>
                                 </td>
                                 <td class="percentage-cell citywide-text">{{ formatPercent(item.percentage) }}%</td>
+                                <td class="percentage-cell votes-cell">{{ formatVotes(item.votes) }}</td>
                             </tr>
                         </tbody>
+                        <tfoot>
+                            <tr class="total-row">
+                                <td>
+                                    <button class="copy-button"
+                                        @click="copyTableToClipboard(citywideData25, true)"
+                                        title="Copy table to clipboard">
+                                        📋
+                                    </button>
+                                    <strong>Total</strong>
+                                </td>
+                                <td></td>
+                                <td class="votes-cell"><strong>{{formatVotes(d3.sum(citywideData25, (d: any) =>
+                                        d.votes)) }}</strong></td>
+                            </tr>
+                        </tfoot>
                     </table>
 
                 </div>
@@ -490,15 +529,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
             <div class="chart-section">
                 <div class="chart-title">
                     <h3>2021 General (allocated to 2025 EDs)</h3>
-                    <!-- <span class="total-votes">{{formatVotes(d3.sum(citywideData21, (d: any) => d.votes))}} total
-                        votes</span> -->
-                    <button class="copy-button" @click="copyTableToClipboard(citywideData21, false)"
-                        title="Copy table to clipboard">
-                        📋
-                    </button>
                 </div>
-                <span class="total-votes">{{formatVotes(d3.sum(citywideData21, (d: any) => d.votes))}} total
-                        votes</span>
                 <div ref="aggChart21"></div>
                 <div class="results-table-container">
                     <table class="results-table">
@@ -506,6 +537,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                             <tr>
                                 <th>Candidate</th>
                                 <th>Citywide %</th>
+                                <th>Votes</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -521,8 +553,24 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                     </div>
                                 </td>
                                 <td class="percentage-cell citywide-text">{{ formatPercent(item.percentage) }}%</td>
+                                <td class="percentage-cell votes-cell">{{ formatVotes(item.votes) }}</td>
                             </tr>
                         </tbody>
+                        <tfoot>
+                            <tr class="total-row">
+                                <td>
+                                    <button class="copy-button"
+                                        @click="copyTableToClipboard(citywideData21, true)"
+                                        title="Copy table to clipboard">
+                                        📋
+                                    </button>
+                                    <strong>Total</strong>
+                                </td>
+                                <td></td>
+                                <td class="votes-cell"><strong>{{formatVotes(d3.sum(citywideData21, (d: any) =>
+                                        d.votes)) }}</strong></td>
+                            </tr>
+                        </tfoot>
                     </table>
 
                 </div>
@@ -541,15 +589,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
             <div class="chart-section">
                 <div class="chart-title">
                     <h3>2025 General (unofficial results)</h3>
-                    <!-- <span class="total-votes">{{formatVotes(d3.sum(aggregateData25, (d: any) => d.votes))}} total
-                        votes</span> -->
-                    <button class="copy-button" @click="copyTableToClipboard(aggregateData25, true)"
-                        title="Copy table to clipboard">
-                        📋
-                    </button>
                 </div>
-                <span class="total-votes">{{formatVotes(d3.sum(aggregateData25, (d: any) => d.votes))}} total
-                        votes in filtered EDs</span>
                 <div ref="aggChart25"></div>
                 <div class="results-table-container">
                     <table class="results-table">
@@ -576,6 +616,21 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                 <td class="percentage-cell votes-cell">{{ formatVotes(item.votes) }}</td>
                             </tr>
                         </tbody>
+                        <tfoot>
+                            <tr class="total-row">
+                                <td>
+                                    <button class="copy-button"
+                                        @click="copyTableToClipboard(aggregateData25, true)"
+                                        title="Copy table to clipboard">
+                                        📋
+                                    </button>
+                                    <strong>Total</strong>
+                                </td>
+                                <td></td>
+                                <td class="votes-cell"><strong>{{formatVotes(d3.sum(aggregateData25, (d: any) =>
+                                        d.votes)) }}</strong></td>
+                            </tr>
+                        </tfoot>
                     </table>
 
                 </div>
@@ -585,15 +640,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
             <div class="chart-section">
                 <div class="chart-title">
                     <h3>2021 General (allocated to 2025 EDs)</h3>
-                    <!-- <span class="total-votes">{{formatVotes(d3.sum(aggregateData21, (d: any) => d.votes))}} total
-                        votes</span> -->
-                    <button class="copy-button" @click="copyTableToClipboard(aggregateData21, true)"
-                        title="Copy table to clipboard">
-                        📋
-                    </button>
                 </div>
-                <span class="total-votes">{{formatVotes(d3.sum(aggregateData21, (d: any) => d.votes))}} total
-                        votes in filtered EDs</span>
                 <div ref="aggChart21"></div>
                 <div class="results-table-container">
                     <table class="results-table">
@@ -620,6 +667,21 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                 <td class="percentage-cell votes-cell">{{ formatVotes(item.votes) }}</td>
                             </tr>
                         </tbody>
+                        <tfoot>
+                            <tr class="total-row">
+                                <td>
+                                    <button class="copy-button"
+                                        @click="copyTableToClipboard(aggregateData21, true)"
+                                        title="Copy table to clipboard">
+                                        📋
+                                    </button>
+                                    <strong>Total</strong>
+                                </td>
+                                <td></td>
+                                <td class="votes-cell"><strong>{{formatVotes(d3.sum(aggregateData21, (d: any) =>
+                                        d.votes)) }}</strong></td>
+                            </tr>
+                        </tfoot>
                     </table>
 
                 </div>
@@ -628,9 +690,10 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
         <div class="header" v-if="hoveredData">
             <div class="header-content">
                 <div>
-                    <h3><!-- You have selected:  -->{{ hasFilteredData && !hoveredData ? 'Filtered Districts' : (hasFilteredData
-                        ?
-                        edLabel :
+                    <h3><!-- You have selected:  -->{{ hasFilteredData && !hoveredData ? 'Filtered Districts' :
+                        (hasFilteredData
+                            ?
+                            edLabel :
                         edLabel) }}</h3>
                 </div>
                 <button v-if="hoveredData" class="close-button" @click="emit('close')" aria-label="Close">
@@ -643,15 +706,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                 <div class="chart-section">
                     <div class="chart-title">
                         <h3>2025 General (unofficial results)</h3>
-                        <!-- <span class="total-votes">{{formatVotes(d3.sum(data25, (d: any) => d.votes))}} total
-                            votes</span> -->
-                        <button class="copy-button" @click="copyTableToClipboard(data25, true)"
-                            title="Copy table to clipboard">
-                            📋
-                        </button>
                     </div>
-                    <span class="total-votes">{{formatVotes(d3.sum(data25, (d: any) => d.votes))}} total
-                            votes in ED {{  }}</span>
                     <div ref="chart25"></div>
                     <div class="results-table-container">
                         <table class="results-table">
@@ -679,6 +734,20 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                     <td class="percentage-cell votes-cell">{{ formatVotes(item.votes) }}</td>
                                 </tr>
                             </tbody>
+                            <tfoot>
+                                <tr class="total-row">
+                                    <td>
+                                        <button class="copy-button"
+                                            @click="copyTableToClipboard(data25, true)" title="Copy table to clipboard">
+                                            📋
+                                        </button>
+                                        <strong>Total</strong>
+                                    </td>
+                                    <td></td>
+                                    <td class="votes-cell"><strong>{{formatVotes(d3.sum(data25, (d: any) => d.votes))
+                                            }}</strong></td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 </div>
@@ -687,13 +756,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                 <div class="chart-section">
                     <div class="chart-title">
                         <h3>2021 General (allocated to 2025 EDs)</h3>
-                        <button class="copy-button" @click="copyTableToClipboard(data21, true)"
-                            title="Copy table to clipboard">
-                            📋
-                        </button>
                     </div>
-                    <span class="total-votes">{{formatVotes(d3.sum(data21, (d: any) => d.votes))}} total
-                            votes in ED {{  }}</span>
                     <div ref="chart21"></div>
                     <div class="results-table-container">
                         <table class="results-table">
@@ -721,6 +784,20 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                     <td class="percentage-cell votes-cell">{{ formatVotes(item.votes) }}</td>
                                 </tr>
                             </tbody>
+                            <tfoot>
+                                <tr class="total-row">
+                                    <td>
+                                        <button class="copy-button"
+                                            @click="copyTableToClipboard(data21, true)" title="Copy table to clipboard">
+                                            📋
+                                        </button>
+                                        <strong>Total</strong>
+                                    </td>
+                                    <td></td>
+                                    <td class="votes-cell"><strong>{{formatVotes(d3.sum(data21, (d: any) => d.votes))
+                                            }}</strong></td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 </div>
@@ -832,7 +909,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
     color: #666;
     font-size: 1rem;
     font-weight: 600;
-    line-height: 1.5;
+    line-height: 0.9;
     letter-spacing: 0.03125em;
 }
 
@@ -841,7 +918,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
     color: #666;
     font-size: 0.875rem;
     font-weight: 400;
-    line-height: 1.425;
+    line-height: 0.8;
     letter-spacing: 0.0178571429em;
 }
 
@@ -901,10 +978,13 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
     border: none;
     font-size: 0.8rem;
     cursor: pointer;
-    transition: all 0.2s ease;
-    background-color: #ffffff;
     border-radius: 8px;
+    position: absolute;
+    left: 0;
+    font-size: 0.9rem;
+    vertical-align: middle;
 }
+
 
 .copy-button:hover {
     background-color: #e8e8e8;
@@ -950,6 +1030,16 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
 
 .results-table tbody tr:last-child {
     border-bottom: none;
+}
+
+.results-table tfoot {
+    border-top: 2px solid #333;
+}
+
+.results-table tfoot .total-row td {
+    font-family: monospace;
+    background-color: #f5f5f5;
+    position: relative;
 }
 
 .results-table tbody tr:hover {

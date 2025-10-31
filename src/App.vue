@@ -64,6 +64,7 @@ const COLOR_SCALE = {
         }
     ],
     'other': {
+        'id': 'gen25othr',
         'label': 'Other',
         //Gray palette via ColorBrewer
         'colors': ['#f7f7f7', '#d9d9d9', '#bdbdbd', '#969696', '#636363', '#252525']
@@ -117,12 +118,12 @@ const SETTINGS = {
 // generate properties.data
 const parsedFilterData = d3.csvParse(FILTER_DATA_RAW, d3.autoType) as any[];
 const FILTER_PROPERTIES = new Map(
-    parsedFilterData.map(({ ElectDist, ...rest }) => [String(ElectDist), rest])
+    parsedFilterData.map(({ aded25, ...rest }) => [String(aded25), rest])
 );
 
 const parsedResultsData = d3.csvParse(RESULTS_DATA_RAW, d3.autoType) as any[];
 const RESULTS_PROPERTIES = new Map(
-    parsedResultsData.map(({ ElectDist, ...rest }) => [String(ElectDist), rest])
+    parsedResultsData.map(({ aded25, ...rest }) => [String(aded25), rest])
 );
 
 const features = NYED_GEOM.features.map((d: any) => {
@@ -143,11 +144,13 @@ const features = NYED_GEOM.features.map((d: any) => {
         d.properties.gen25ac_pct = ((d.properties.gen25ac || 0) / gen25total) * 100;
         d.properties.gen25cs_pct = ((d.properties.gen25cs || 0) / gen25total) * 100;
         d.properties.gen25ea_pct = ((d.properties.gen25ea || 0) / gen25total) * 100;
+        d.properties.gen25othr_pct = ((d.properties.gen25othr || 0) / gen25total) * 100;
     } else {
         d.properties.gen25zm_pct = 0;
         d.properties.gen25ac_pct = 0;
         d.properties.gen25cs_pct = 0;
         d.properties.gen25ea_pct = 0;
+        d.properties.gen25othr_pct = 0;
     }
 
     // Calculate percentages for 2021
@@ -175,6 +178,11 @@ const searchResults = ref<Array<{ column: string; label: string; short_label: st
 const showSearchResults = ref(false)
 const showCityCouncil = ref(false)
 const showNYCHA = ref(false)
+
+// Map state for URL sync
+const mapCenter = ref<[number, number]>([-73.9438, 40.710])
+const mapZoom = ref<number>(10)
+let mapInstance: MaplibreMap | null = null
 
 // Initialize FlexSearch index
 const searchIndex = new Index({
@@ -221,13 +229,69 @@ const filteredDistricts = computed(() => {
     });
 })
 
+// URL State Management
+function updateURL() {
+    const params = new URLSearchParams()
+
+    // Add filters
+    if (selectedFilters.value.length > 0) {
+        params.set('filters', selectedFilters.value.map(f => f.column).join(','))
+    }
+
+    // Add map position
+    if (mapInstance) {
+        const center = mapInstance.getCenter()
+        const zoom = mapInstance.getZoom()
+        params.set('lat', center.lat.toFixed(5))
+        params.set('lng', center.lng.toFixed(5))
+        params.set('zoom', zoom.toFixed(2))
+    }
+
+    // Add selected ED
+    if (clickedId.value) {
+        params.set('ed', String(clickedId.value))
+    }
+
+    const newURL = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname
+    window.history.replaceState({}, '', newURL)
+}
+
+function loadFromURL() {
+    const params = new URLSearchParams(window.location.search)
+
+    // Load filters
+    const filtersParam = params.get('filters')
+    if (filtersParam) {
+        const filterColumns = filtersParam.split(',')
+        selectedFilters.value = FILTER_OPTIONS.filter(opt => filterColumns.includes(opt.column))
+    }
+
+    // Load map position
+    const lat = params.get('lat')
+    const lng = params.get('lng')
+    const zoom = params.get('zoom')
+
+    if (lat && lng && zoom) {
+        mapCenter.value = [parseFloat(lng), parseFloat(lat)]
+        mapZoom.value = parseFloat(zoom)
+    }
+
+    // Load selected ED
+    const ed = params.get('ed')
+    if (ed) {
+        clickedId.value = ed
+    }
+}
+
 function clearClickedId() {
     clickedId.value = null;
     hoveredId.value = null;
+    updateURL()
 }
 
 function clearFilters() {
     selectedFilters.value = []
+    updateURL()
 }
 
 function addFilter(filter: { column: string; label: string; short_label: string }) {
@@ -235,6 +299,7 @@ function addFilter(filter: { column: string; label: string; short_label: string 
     const exists = selectedFilters.value.some(f => f.column === filter.column)
     if (!exists) {
         selectedFilters.value.push(filter)
+        updateURL()
     }
     // Clear search
     searchQuery.value = ''
@@ -244,6 +309,7 @@ function addFilter(filter: { column: string; label: string; short_label: string 
 
 function removeFilter(column: string) {
     selectedFilters.value = selectedFilters.value.filter(f => f.column !== column)
+    updateURL()
 }
 
 function performSearch() {
@@ -269,6 +335,11 @@ watch(searchQuery, () => {
     performSearch()
 })
 
+// Watch for clickedId changes to update URL
+watch(clickedId, () => {
+    updateURL()
+})
+
 function transformRequest(url: string, resourceType: string) {
     if (isMapboxURL(url)) {
         return transformMapboxUrl(url, resourceType ?? 'Unknown', MAPBOX_KEY)
@@ -290,20 +361,29 @@ function buildFilterExpression(): any[] {
 }
 
 onMounted(() => {
-    // Init map adnd add json layer
+    // Load state from URL first
+    loadFromURL()
+
+    // Init map and add json layer
     const map = new MaplibreMap({
         container: "map",
         style: MAPBOX_STYLE_URL,
         //@ts-expect-error Type 'maplibregl.ResourceType | undefined' is not assignable to type 'string'
         transformRequest,
-        center: [-73.9438, 40.710],
-        zoom: 10,
+        center: mapCenter.value,
+        zoom: mapZoom.value,
         attributionControl: false
     });
+
+    mapInstance = map
 
     map.addControl(new AttributionControl({ compact: true, customAttribution: '' }), 'bottom-left');
     map.addControl(new (NavigationControl as any)({ showCompass: false }), 'bottom-left');
 
+    // Update URL when map moves
+    map.on('moveend', () => {
+        updateURL()
+    })
 
     // Wait for maps to load before creating the comparison
     Promise.all([
@@ -568,7 +648,7 @@ onMounted(() => {
     <div id="main">
         <div class="comparison-container">
             <div class="details">
-                <h2>NYC 2025 General Election: Mayor</h2>
+                <h2>2025 General Election: Mayor</h2>
                 <h3>Vote share by election district</h3>
 
                 <div class="filters-section">
@@ -688,13 +768,15 @@ body {
         display: inline;
         margin: 0;
         font-size: 1.5rem;
+        line-height: 0.8;
     }
 
     .details h3 {
         display: inline;
         margin-top: 0;
         font-size: 0.8rem;
-        color: #222;
+        font-weight: 500;
+        color: #404040;
     }
 }
 
