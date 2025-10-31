@@ -320,7 +320,7 @@ onMounted(() => {
 
         map.addSource('nycha-source', {
             type: 'vector',
-            tiles: ['https://www.urbanresearchmaps.org/tiles/common.nyc_nycha_dev_20251030.geom,common.nyc_nycha_dev_20251030.geom_pt/{z}/{x}/{y}'],
+            tiles: ['https://www.urbanresearchmaps.org/tiles/common.nycha.geom,common.nycha.geom_pt/{z}/{x}/{y}'],
             minzoom: 0,
             maxzoom: 14
         });
@@ -429,7 +429,7 @@ onMounted(() => {
             'id': 'nycha-fill',
             'type': 'fill',
             'source': 'nycha-source',
-            'source-layer': 'common.nyc_nycha_dev_20251030.geom',
+            'source-layer': 'common.nycha.geom',
             'layout': {
                 'visibility': 'none'
             },
@@ -443,7 +443,7 @@ onMounted(() => {
             'id': 'nycha-line',
             'type': 'line',
             'source': 'nycha-source',
-            'source-layer': 'common.nyc_nycha_dev_20251030.geom',
+            'source-layer': 'common.nycha.geom',
             'layout': {
                 'visibility': 'none'
             },
@@ -457,10 +457,10 @@ onMounted(() => {
             'id': 'nycha-label',
             'type': 'symbol',
             'source': 'nycha-source',
-            'source-layer': 'common.nyc_nycha_dev_20251030.geom_pt',
+            'source-layer': 'common.nycha.geom_pt',
             'layout': {
                 'visibility': 'none',
-                'text-field': ['get', 'developmen'],
+                'text-field': ['get', 'name'],
                 'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
                 'text-size': 10
             },
