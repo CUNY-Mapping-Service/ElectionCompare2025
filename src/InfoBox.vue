@@ -477,7 +477,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
             <!-- 2025 Citywide -->
             <div class="chart-section">
                 <div class="chart-title">
-                    <h3>2025 General (unofficial results)</h3>
+                    <h3>2025 General (unofficial results: <span style="font-weight: 200;">92% of scanners reported</span>)</h3>
                 </div>
                 <div ref="aggChart25"></div>
                 <div class="results-table-container">
