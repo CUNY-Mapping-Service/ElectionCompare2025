@@ -137,32 +137,32 @@ const features = NYED_GEOM.features.map((d: any) => {
         ...resultsProps
     };
 
-    // Calculate percentages for 2025
-    const gen25total = d.properties.gen25tot || 0;
+    // Calculate percentages for 2025, round first
+    const gen25total = Math.round(d.properties.gen25tot || 0);
+    d.properties.gen25zm = Math.round(d.properties.gen25zm || 0);
+    d.properties.gen25ac = Math.round(d.properties.gen25ac || 0);
+    d.properties.gen25cs = Math.round(d.properties.gen25cs || 0);
+    d.properties.gen25ea = Math.round(d.properties.gen25ea || 0);
+    d.properties.gen25othr = Math.round(d.properties.gen25othr || 0);
+
     if (gen25total > 0) {
-        d.properties.gen25zm_pct = ((d.properties.gen25zm || 0) / gen25total) * 100;
-        d.properties.gen25ac_pct = ((d.properties.gen25ac || 0) / gen25total) * 100;
-        d.properties.gen25cs_pct = ((d.properties.gen25cs || 0) / gen25total) * 100;
-        d.properties.gen25ea_pct = ((d.properties.gen25ea || 0) / gen25total) * 100;
-        d.properties.gen25othr_pct = ((d.properties.gen25othr || 0) / gen25total) * 100;
-    } else {
-        d.properties.gen25zm_pct = 0;
-        d.properties.gen25ac_pct = 0;
-        d.properties.gen25cs_pct = 0;
-        d.properties.gen25ea_pct = 0;
-        d.properties.gen25othr_pct = 0;
+        d.properties.gen25zm_pct = (d.properties.gen25zm / gen25total) * 100;
+        d.properties.gen25ac_pct = (d.properties.gen25ac / gen25total) * 100;
+        d.properties.gen25cs_pct = (d.properties.gen25cs / gen25total) * 100;
+        d.properties.gen25ea_pct = (d.properties.gen25ea / gen25total) * 100;
+        d.properties.gen25othr_pct = (d.properties.gen25othr / gen25total) * 100;
     }
 
     // Calculate percentages for 2021
-    const gen21total = d.properties.gen21tot || 0;
+    const gen21total = Math.round(d.properties.gen21tot || 0);
+    d.properties.gen21ea = Math.round(d.properties.gen21ea || 0);
+    d.properties.gen21cs = Math.round(d.properties.gen21cs || 0);
+    d.properties.gen21othr = Math.round(d.properties.gen21othr || 0);
+
     if (gen21total > 0) {
-        d.properties.gen21ea_pct = ((d.properties.gen21ea || 0) / gen21total) * 100;
-        d.properties.gen21cs_pct = ((d.properties.gen21cs || 0) / gen21total) * 100;
-        d.properties.gen21othr_pct = ((d.properties.gen21othr || 0) / gen21total) * 100;
-    } else {
-        d.properties.gen21ea_pct = 0;
-        d.properties.gen21cs_pct = 0;
-        d.properties.gen21othr_pct = 0;
+        d.properties.gen21ea_pct = (d.properties.gen21ea / gen21total) * 100;
+        d.properties.gen21cs_pct = (d.properties.gen21cs / gen21total) * 100;
+        d.properties.gen21othr_pct = (d.properties.gen21othr / gen21total) * 100;
     }
 
     d.properties.color = SETTINGS.getColor(d.properties);
@@ -276,10 +276,12 @@ function loadFromURL() {
         mapZoom.value = parseFloat(zoom)
     }
 
-    // Load selected ED
     const ed = params.get('ed')
     if (ed) {
-        clickedId.value = ed
+        const feature = features.find((f: any) => String(f.properties[SETTINGS.promoteId]) === ed)
+        if (feature) {
+            clickedId.value = feature.properties[SETTINGS.promoteId]
+        }
     }
 }
 
@@ -551,6 +553,14 @@ onMounted(() => {
             }
         });
 
+        // Apply clicked state from URL
+        if (clickedId.value !== null) {
+            map.setFeatureState(
+                { source: 'map-source', id: clickedId.value },
+                { clicked: true }
+            );
+        }
+
         // Watch for filter changes and update the mask layer
         watch(selectedFilters, (newFilters) => {
             // @ts-ignore
@@ -648,7 +658,7 @@ onMounted(() => {
     <div id="main">
         <div class="comparison-container">
             <div class="details">
-                <h2>2025 General Election: Mayor</h2>
+                <h2>2025 General Election -50deg Mayor</h2>
                 <h3>Vote share by election district</h3>
 
                 <div class="filters-section">
@@ -767,7 +777,7 @@ body {
     .details h2 {
         display: inline;
         margin: 0;
-        font-size: 1.5rem;
+        font-size: 1.4rem;
         line-height: 0.8;
     }
 

@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
 import * as d3 from 'd3';
 
-const formatPercent = d3.format('.1f');
+const formatPercent = d3.format('.2f');
 const formatVotes = d3.format(',.0f');
 
 interface FeatureProperties {
@@ -294,7 +294,7 @@ const drawStackedChart = (ref: any, data: any[], maxVotes: number) => {
 
     d3.select(ref).selectAll("*").remove();
 
-    const margin = { top: 0, right: 25, bottom: 22, left: 0 };
+    const margin = { top: 0, right: 30, bottom: 22, left: 0 };
     const width = containerWidth.value - margin.left - margin.right;
     const height = 10;
 
@@ -823,6 +823,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
     flex: 1;
     overflow-y: auto;
     display: flex;
+    padding-right: 8px;
     flex-direction: column;
     font-family: Roboto, Helvetica, Arial, sans-serif;
 }
