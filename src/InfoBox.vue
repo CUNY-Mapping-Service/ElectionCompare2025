@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
 import * as d3 from 'd3';
 
-const formatPercent = d3.format('.2f');
+const formatPercent = d3.format('.1f');
 const formatVotes = d3.format(',.0f');
 
 interface FeatureProperties {
@@ -570,6 +570,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                 <td class="votes-cell"><strong>{{formatVotes(d3.sum(citywideData21, (d: any) =>
                                         d.votes)) }}</strong></td>
                             </tr>
+                            <tr>NOTES <br />Totals may not add up to 100% due to rounding.<br />2021 totals omit write-in votes.</tr>
                         </tfoot>
                     </table>
 
@@ -919,7 +920,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
     color: #666;
     font-size: 0.875rem;
     font-weight: 400;
-    line-height: 0.8;
+    line-height: 1;
     letter-spacing: 0.0178571429em;
 }
 

@@ -41,6 +41,13 @@
     "isFilter": false
   },
   {
+    "column": "djt2024",
+    "short_label": "Trump vote strength 2024",
+    "label": "EDs with 40% or more votes for Donald Trump in 2024",
+    "isFilter": true,
+    "keyterms": ["trump", "gop", "republican", "maga"]
+  },
+  {
     "column": "rvhisp",
     "short_label": "Voters w/Hispanic surnames",
     "label": "EDs with 1/3 or more of active registered voters w/Hispanic surname",
