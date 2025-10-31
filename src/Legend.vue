@@ -35,9 +35,6 @@ function getLabelText(index: number) {
 </script>
 <template>
     <div class="legend-container">
-        <button @click="toggleExpanded" class="legend-toggle" aria-label="Toggle legend">
-            {{ isExpanded ? 'Hide Legend' : 'Legend' }}
-        </button>
         <div v-show="isExpanded" class="legend-content">
             <!-- Layer Toggle Section -->
             <div class="layer-toggle">
@@ -81,6 +78,9 @@ function getLabelText(index: number) {
             </div>
             <p class="subtitle">Blank areas = no votes and/or no population</p>
         </div>
+        <button @click="toggleExpanded" class="legend-toggle" aria-label="Toggle legend">
+            {{ isExpanded ? 'Hide Legend' : 'Legend' }}
+        </button>
     </div>
 </template>
 <style scoped>

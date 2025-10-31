@@ -54,7 +54,7 @@ const COLOR_SCALE = {
             'id': 'gen25cs',
             'label': 'Curtis Sliwa',
             //Red palette via ColorBrewer
-            'colors': ['#fee5d9','#fcbba1','#fc9272','#fb6a4a','#de2d26','#a50f15']
+            'colors': ['#fee5d9', '#fcbba1', '#fc9272', '#fb6a4a', '#de2d26', '#a50f15']
         },
         {
             'id': 'gen25ea',
@@ -453,7 +453,7 @@ onMounted(() => {
             }
         });
 
-         map.addLayer({
+        map.addLayer({
             'id': 'nycha-label',
             'type': 'symbol',
             'source': 'nycha-source',
@@ -617,7 +617,8 @@ onMounted(() => {
             <div class="map-container">
                 <div id="map" class="map"></div>
                 <div class="cuny-logo-wrapper">
-                    <a href="https://www.gc.cuny.edu/center-urban-research" target="_blank"><img :src="cunygclogo" alt="CUNY GC Logo" class="cuny-logo"></a>
+                    <a href="https://www.gc.cuny.edu/center-urban-research" target="_blank"><img :src="cunygclogo"
+                            alt="CUNY GC Logo" class="cuny-logo"></a>
                 </div>
                 <Legend :COLOR_SCALE="COLOR_SCALE" :showCityCouncil="showCityCouncil" :showNYCHA="showNYCHA"
                     @update:showCityCouncil="showCityCouncil = $event" @update:showNYCHA="showNYCHA = $event" />
@@ -650,7 +651,7 @@ body {
     font-family: Roboto, Helvetica, Arial, sans-serif;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 600px) {
     .comparison-container {
         flex-direction: row;
     }
@@ -658,7 +659,7 @@ body {
 
 .details {
     width: 100%;
-    height: 60%;
+    height: 65%;
     overflow: auto;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     color: #1f2937;
@@ -668,10 +669,32 @@ body {
     background-color: white;
 }
 
-@media (min-width: 768px) {
+/* hide h2 and h3 elements on mobile to allow for space*/
+.details h2 {
+    display: none;
+}
+
+.details h3 {
+    display: none;
+}
+
+@media (min-width: 600px) {
     .details {
         height: 100%;
         width: 25rem;
+    }
+
+    .details h2 {
+        display: inline;
+        margin: 0;
+        font-size: 1.5rem;
+    }
+
+    .details h3 {
+        display: inline;
+        margin-top: 0;
+        font-size: 0.8rem;
+        color: #222;
     }
 }
 
@@ -681,7 +704,7 @@ body {
     order: -1;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 600px) {
     .map-container {
         order: 0;
     }
@@ -700,22 +723,11 @@ body {
     height: 100%;
 }
 
-.details h2 {
-    margin: 0;
-    font-size: 1.5rem;
-}
-
-.details h3 {
-    margin-top: 0;
-    font-size: 0.8rem;
-    color: #222;
-}
-
 .filters-section {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    padding: 1rem 0;
+    padding-top: 0.4rem;
 }
 
 .filters-section label {
@@ -789,7 +801,7 @@ body {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    margin-top: 0.5rem;
+    margin-top: 0.25rem;
 }
 
 .filter-pill {
