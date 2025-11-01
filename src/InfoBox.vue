@@ -477,7 +477,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
             <!-- 2025 Citywide -->
             <div class="chart-section">
                 <div class="chart-title">
-                    <h3>2025 General (unofficial results: <span style="font-weight: 200;">X% of scanners reported</span>)</h3>
+                    <h3>2025 General (unofficial <span style="font-style: italic;">TEST</span> results: <span style="font-weight: 200;">X% of scanners reported</span>)</h3>
                 </div>
                 <div ref="aggChart25"></div>
                 <div class="results-table-container">
@@ -590,7 +590,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
             <!-- 2025 Aggregate -->
             <div class="chart-section">
                 <div class="chart-title">
-                    <h3>2025 General (unofficial results: <span style="font-weight: 200;">X% of scanners reported</span>)</h3>
+                    <h3>2025 General (unofficial <span style="font-style: italic;">TEST</span> results: <span style="font-weight: 200;">X% of scanners reported</span>)</h3>
                 </div>
                 <div ref="aggChart25"></div>
                 <div class="results-table-container">
@@ -710,7 +710,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                 <!-- 2025 Election Chart -->
                 <div class="chart-section">
                     <div class="chart-title">
-                        <h3>2025 General (unofficial results: <span style="font-weight: 200;">X% of scanners reported</span>)</h3>
+                        <h3>2025 General (unofficial <span style="font-style: italic;">TEST</span> results: <span style="font-weight: 200;">X% of scanners reported</span>)</h3>
                     </div>
                     <div ref="chart25"></div>
                     <div class="results-table-container">
