@@ -483,8 +483,8 @@ onMounted(() => {
                 'visibility': 'none'
             },
             'paint': {
-                'line-color': '#000000',
-                'line-width': 2
+                'line-color': '#4d4d4d',
+                'line-width': 1.5
             }
         });
 
@@ -497,12 +497,12 @@ onMounted(() => {
                 'visibility': 'none',
                 'text-field': ['get', 'districtid'],
                 'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-                'text-size': 14
+                'text-size': 12
             },
             'paint': {
-                'text-color': '#000000',
+                'text-color': '#4d4d4d',
                 'text-halo-color': '#ffffff',
-                'text-halo-width': 2
+                'text-halo-width': 1
             }
         });
 
