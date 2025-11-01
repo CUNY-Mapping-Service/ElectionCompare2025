@@ -30,7 +30,7 @@ const edLabel = computed(() => {
     if (!props.hoveredData) return '';
 
     const id = props.hoveredData?.properties[props.idKey]
-    const ntaName = props.hoveredData?.properties.nta_shortname
+    const ntaName = props.hoveredData?.properties.ntashort
 
     if (id) {
         const ad = String(id).slice(0, 2)

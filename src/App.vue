@@ -13,7 +13,7 @@ import { Index } from 'flexsearch';
 import cunygclogo from './cunygc_logo_cur.png'
 
 
-import NYED_GEOM from './stores/nyed25c.json';
+import NYED_GEOM from './stores/nyed25.json';
 import FILTER_DATA_RAW from './stores/filterdata.csv?raw'
 import METADATA from './stores/metadata.json'
 import RESULTS_DATA_RAW from './stores/test25results.csv?raw'
@@ -112,7 +112,7 @@ const SETTINGS = {
 
         return colorScale(value);
     },
-    'promoteId': 'ElectDist',
+    'promoteId': 'aded25',
 }
 
 // generate properties.data
@@ -127,9 +127,9 @@ const RESULTS_PROPERTIES = new Map(
 );
 
 const features = NYED_GEOM.features.map((d: any) => {
-    const electDist = String(d.properties.ElectDist);
-    const filterProps = FILTER_PROPERTIES.get(electDist) || {};
-    const resultsProps = RESULTS_PROPERTIES.get(electDist) || {};
+    const aded25 = String(d.properties.aded25);
+    const filterProps = FILTER_PROPERTIES.get(aded25) || {};
+    const resultsProps = RESULTS_PROPERTIES.get(aded25) || {};
 
     d.properties = {
         ...d.properties,
