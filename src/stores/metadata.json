@@ -49,43 +49,43 @@
   },
   {
     "column": "rvhisp",
-    "short_label": "Voters w/Hispanic surnames",
-    "label": "EDs with 1/3 or more of active registered voters w/Hispanic surname",
+    "short_label": "Registered voters w/Hispanic surnames",
+    "label": "EDs with 1/3 or more active registered voters w/Hispanic surnames (\"active\" = voted in at least 1 general election in last 8 years or registered to vote in 2024 or 2025.)",
     "isFilter": true,
     "keyterms": ["hispanic", "latino", "latina", "latinx", "spanish", "surname", "name"]
   },
   {
     "column": "rvjwsh",
-    "short_label": "Voters w/Jewish surnames",
-    "label": "EDs with 10% or more of active registered voters w/Jewish surname",
+    "short_label": "Registered voters w/Jewish surnames",
+    "label": "EDs with 10% or more active registered voters w/Jewish surnames (\"active\" = voted in at least 1 general election in last 8 years or registered to vote in 2024 or 2025.)",
     "isFilter": true,
     "keyterms": ["jewish", "jew", "judaism", "surname", "religious"]
   },
   {
     "column": "rvirit",
-    "short_label": "Voters w/Irish or Italian surnames",
-    "label": "EDs with 6% or more active registered voters w/Irish or Italian surname",
+    "short_label": "Registered voters w/Irish or Italian surnames",
+    "label": "EDs with 6% or more active registered voters w/Irish or Italian surnames (\"active\" = voted in at least 1 general election in last 8 years or registered to vote in 2024 or 2025.)",
     "isFilter": true,
     "keyterms": ["irish", "italian", "catholic", "surname", "religious", "european"]
   },
   {
     "column": "rvmslm",
-    "short_label": "Voters w/Muslim surnames",
-    "label": "EDs with 8% or more active registered voters w/Muslim surname",
+    "short_label": "Registered voters w/Muslim surnames",
+    "label": "EDs with 8% or more active registered voters w/Muslim surnames (\"active\" = voted in at least 1 general election in last 8 years or registered to vote in 2024 or 2025.)",
     "isFilter": true,
     "keyterms": ["muslim", "islam", "islamic", "surname", "religious"]
   },
   {
     "column": "rvchns",
-    "short_label": "Voters w/Chinese surnames",
-    "label": "EDs with 8% or more active registered voters w/Chinese surname",
+    "short_label": "Registered voters w/Chinese surnames",
+    "label": "EDs with 8% or more active registered voters w/Chinese surnames (\"active\" = voted in at least 1 general election in last 8 years or registered to vote in 2024 or 2025.)",
     "isFilter": true,
     "keyterms": ["chinese", "china", "asian", "surname"]
   },
   {
     "column": "rvgopnop",
     "short_label": "GOP or 'No party' voters",
-    "label": "EDs with 40% or more active registered voters enrolled as GOP or no party",
+    "label": "EDs with 40% or more active registered voters enrolled as GOP or no party (\"active\" = voted in at least 1 general election in last 8 years or registered to vote in 2024 or 2025.)",
     "isFilter": true,
     "keyterms": ["enrollment", "republican", "gop", "conservative", "independent", "no party", "unaffiliated", "nonpartisan", "blank"]
   },
@@ -99,21 +99,21 @@
   {
     "column": "cvapblack",
     "short_label": "Census areas with predominantly Black eligible voters",
-    "label": "EDs in census block groups with 40% or more Black eligible voters (citizens of voting age)",
+    "label": "EDs in census block groups with 40% or more Black eligible voters (citizens of voting age/CVAP)",
     "isFilter": true,
     "keyterms": ["black", "african american", "african-american", "afro", "demographic", "race", "racial"]
   },
   {
     "column": "cvaphisp",
     "short_label": "Census areas with predominantly Hispanic eligible voters",
-    "label": "EDs in census block groups with 40% or more Hispanic eligible voters (citizens of voting age)",
+    "label": "EDs in census block groups with 40% or more Hispanic eligible voters (citizens of voting age/CVAP)",
     "isFilter": true,
     "keyterms": ["hispanic", "latino", "latina", "latinx", "spanish", "demographic", "race", "racial", "ethnicity"]
   },
   {
     "column": "cvapasian",
     "short_label": "Census areas with predominantly Asian eligible voters",
-    "label": "EDs in census block groups with 40% or more Asian eligible voters (citizens of voting age)",
+    "label": "EDs in census block groups with 40% or more Asian eligible voters (citizens of voting age/CVAP)",
     "isFilter": true,
     "keyterms": ["asian", "asian american", "pacific islander", "demographic", "race", "racial"]
   },

@@ -360,7 +360,7 @@ const drawStackedChart = (ref: any, data: any[], maxVotes: number) => {
         .attr('text-anchor', 'start')
         .attr('dy', '0.35em')
         .attr('font-size', '12px')
-        .attr('font-weight', '400')
+        .attr('font-weight', '600')
         .attr('font-family', 'monospace')
         .attr('fill', '#666')
         .text((d: any, i: number) => {
@@ -570,7 +570,8 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                 <td class="votes-cell"><strong>{{formatVotes(d3.sum(citywideData21, (d: any) =>
                                         d.votes)) }}</strong></td>
                             </tr>
-                            <tr>NOTES <br />Totals may not add up to 100% due to rounding.<br />2021 totals omit write-in votes.</tr>
+                            <tr class="footernote">NOTE: Totals may not add up to 100% due to rounding.</tr>
+                            <tr class="footernote">2021 data omits write-in votes.</tr>
                         </tfoot>
                     </table>
 
@@ -589,7 +590,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
             <!-- 2025 Aggregate -->
             <div class="chart-section">
                 <div class="chart-title">
-                    <h3>2025 General (unofficial results)</h3>
+                    <h3>2025 General (unofficial results: <span style="font-weight: 200;">92% of scanners reported</span>)</h3>
                 </div>
                 <div ref="aggChart25"></div>
                 <div class="results-table-container">
@@ -682,6 +683,9 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                 <td class="votes-cell"><strong>{{formatVotes(d3.sum(aggregateData21, (d: any) =>
                                         d.votes)) }}</strong></td>
                             </tr>
+                            <tr class="footernote">NOTES: "Active registered voters" have voted in at least 1 general election in last 8 years or registered to vote in 2024 or 2025.</tr>
+                            <tr class="footernote">Totals may not add up to 100% due to rounding.</tr>
+                            <tr class="footernote">2021 data omits write-in votes.</tr>
                         </tfoot>
                     </table>
 
@@ -706,7 +710,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                 <!-- 2025 Election Chart -->
                 <div class="chart-section">
                     <div class="chart-title">
-                        <h3>2025 General (unofficial results)</h3>
+                        <h3>2025 General (unofficial results: <span style="font-weight: 200;">92% of scanners reported</span>)</h3>
                     </div>
                     <div ref="chart25"></div>
                     <div class="results-table-container">
@@ -798,6 +802,8 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                     <td class="votes-cell"><strong>{{formatVotes(d3.sum(data21, (d: any) => d.votes))
                                             }}</strong></td>
                                 </tr>
+                            <tr class="footernote">NOTE: Totals may not add up to 100% due to rounding.</tr>
+                            <tr class="footernote">2021 data omits write-in votes.</tr>
                             </tfoot>
                         </table>
                     </div>
@@ -1044,6 +1050,9 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
     position: relative;
 }
 
+.results-table tfoot .footernote {
+    text-align: left;
+}
 .results-table tbody tr:hover {
     background-color: #fafafa;
 }
