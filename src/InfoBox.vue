@@ -683,7 +683,6 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                 <td class="votes-cell"><strong>{{formatVotes(d3.sum(aggregateData21, (d: any) =>
                                         d.votes)) }}</strong></td>
                             </tr>
-                            <tr class="footernote">NOTES: "Active registered voters" have voted in at least 1 general election in last 8 years or registered to vote in 2024 or 2025.</tr>
                             <tr class="footernote">Totals may not add up to 100% due to rounding.</tr>
                             <tr class="footernote">2021 data omits write-in votes.</tr>
                         </tfoot>
