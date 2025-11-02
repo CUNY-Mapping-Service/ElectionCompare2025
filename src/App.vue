@@ -180,8 +180,10 @@ const showCityCouncil = ref(false)
 const showNYCHA = ref(false)
 
 // Map state for URL sync
-const mapCenter = ref<[number, number]>([-73.9438, 40.710])
-const mapZoom = ref<number>(10)
+const mapCenter = ref<[number, number]>([-73.92227, 40.71772])
+const mapZoom = ref<number>(10.5)
+/* const mapCenter = ref<[number, number]>([-73.9438, 40.710])
+const mapZoom = ref<number>(10) */
 let mapInstance: MaplibreMap | null = null
 
 // Initialize FlexSearch index
