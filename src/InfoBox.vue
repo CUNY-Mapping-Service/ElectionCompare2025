@@ -477,7 +477,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
             <!-- 2025 Citywide -->
             <div class="chart-section">
                 <div class="chart-title">
-                    <h3>2025 General (unofficial <span style="font-style: italic;">TEST</span> results: <span style="font-weight: 200;">X% of scanners reported</span>)</h3>
+                    <h3>2025 General (unofficial <span style="font-style: italic;">TEST</span> results)<br /><span style="font-weight: 200;">X% of scanners reported</span></h3>
                 </div>
                 <div ref="aggChart25"></div>
                 <div class="results-table-container">
@@ -570,8 +570,12 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                 <td class="votes-cell"><strong>{{formatVotes(d3.sum(citywideData21, (d: any) =>
                                         d.votes)) }}</strong></td>
                             </tr>
-                            <tr class="footernote">Totals may not add to 100% due to rounding.</tr>
-                            <tr class="footernote">2021 data omits write-in votes.</tr>
+                            <tr class="footernote">
+                                <td colspan="3">Totals may not add to 100% due to rounding.</td>
+                            </tr>
+                            <tr class="footernote">
+                                <td colspan="3">2021 data omits write-in votes.</td>
+                            </tr>
                         </tfoot>
                     </table>
 
@@ -590,7 +594,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
             <!-- 2025 Aggregate -->
             <div class="chart-section">
                 <div class="chart-title">
-                    <h3>2025 General (unofficial <span style="font-style: italic;">TEST</span> results: <span style="font-weight: 200;">X% of scanners reported</span>)</h3>
+                    <h3>2025 General (unofficial <span style="font-style: italic;">TEST</span> results)<br /><span style="font-weight: 200;">X% of scanners reported</span></h3>
                 </div>
                 <div ref="aggChart25"></div>
                 <div class="results-table-container">
@@ -683,8 +687,12 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                 <td class="votes-cell"><strong>{{formatVotes(d3.sum(aggregateData21, (d: any) =>
                                         d.votes)) }}</strong></td>
                             </tr>
-                            <tr class="footernote">Totals may not add to 100% due to rounding.</tr>
-                            <tr class="footernote">2021 data omits write-in votes.</tr>
+                            <tr class="footernote">
+                                <td colspan="3">Totals may not add to 100% due to rounding.</td>
+                            </tr>
+                            <tr class="footernote">
+                                <td colspan="3">2021 data omits write-in votes.</td>
+                            </tr>
                         </tfoot>
                     </table>
 
@@ -709,7 +717,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                 <!-- 2025 Election Chart -->
                 <div class="chart-section">
                     <div class="chart-title">
-                        <h3>2025 General (unofficial <span style="font-style: italic;">TEST</span> results: <span style="font-weight: 200;">X% of scanners reported</span>)</h3>
+                    <h3>2025 General (unofficial <span style="font-style: italic;">TEST</span> results)<br /><span style="font-weight: 200;">X% of scanners reported</span></h3>
                     </div>
                     <div ref="chart25"></div>
                     <div class="results-table-container">
@@ -801,8 +809,12 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                     <td class="votes-cell"><strong>{{formatVotes(d3.sum(data21, (d: any) => d.votes))
                                             }}</strong></td>
                                 </tr>
-                            <tr class="footernote">Totals may not add to 100% due to rounding.</tr>
-                            <tr class="footernote">2021 data omits write-in votes.</tr>
+                            <tr class="footernote">
+                                <td colspan="3">Totals may not add to 100% due to rounding.</td>
+                            </tr>
+                            <tr class="footernote">
+                                <td colspan="3">2021 data omits write-in votes.</td>
+                            </tr>
                             </tfoot>
                         </table>
                     </div>
@@ -1051,7 +1063,9 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
 
 .results-table tfoot .footernote {
     text-align: left;
+    font-size: 11px;
 }
+
 .results-table tbody tr:hover {
     background-color: #fafafa;
 }
