@@ -570,7 +570,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                 <td class="votes-cell"><strong>{{formatVotes(d3.sum(citywideData21, (d: any) =>
                                         d.votes)) }}</strong></td>
                             </tr>
-                            <tr class="footernote">NOTE: Totals may not add to 100% due to rounding.</tr>
+                            <tr class="footernote">Totals may not add to 100% due to rounding.</tr>
                             <tr class="footernote">2021 data omits write-in votes.</tr>
                         </tfoot>
                     </table>
@@ -801,7 +801,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                     <td class="votes-cell"><strong>{{formatVotes(d3.sum(data21, (d: any) => d.votes))
                                             }}</strong></td>
                                 </tr>
-                            <tr class="footernote">NOTE: Totals may not add to 100% due to rounding.</tr>
+                            <tr class="footernote">Totals may not add to 100% due to rounding.</tr>
                             <tr class="footernote">2021 data omits write-in votes.</tr>
                             </tfoot>
                         </table>
