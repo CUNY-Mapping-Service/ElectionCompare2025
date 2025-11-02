@@ -48,6 +48,20 @@
     "keyterms": ["trump", "gop", "republican", "maga"]
   },
   {
+    "column": "ea2021",
+    "short_label": "EDs won by Eric Adams 2021",
+    "label": "EDs with 50% or more votes for Eric Adams in 2021",
+    "isFilter": true,
+    "keyterms": ["eric", "adams", "2021", "mayor", "democrat"]
+  },
+  {
+    "column": "cs2021",
+    "short_label": "EDs won by Curtis Sliwa 2021",
+    "label": "EDs with 50% or more votes for Curtis Sliwa in 2021",
+    "isFilter": true,
+    "keyterms": ["curtis", "sliwa", "2021", "mayor", "gop", "republican"]
+  },
+  {
     "column": "rvhisp",
     "short_label": "Registered voters w/Hispanic surnames",
     "label": "EDs with 1/3 or more active registered voters w/Hispanic surnames (\"active\" = voted in at least 1 general election in last 8 years or registered to vote in 2024 or 2025.)",
