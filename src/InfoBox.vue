@@ -21,6 +21,7 @@ interface Props {
     allFeatures?: any[]; // Array of all features for citywide calculations
 }
 
+const scannerPercent = 0
 const props = defineProps<Props>();
 const emit = defineEmits<{
     close: []
@@ -285,14 +286,19 @@ const copyTableToClipboard = async (data: any[], includeCitywide: boolean = fals
 
     const text = [headers.join('\t'), ...rows].join('\n');
     await navigator.clipboard.writeText(text);
+    // include allow="clipboard-write" in the <iframe> tag
 
 };
 
 // Draw stacked bar chart with responsive width
 const drawStackedChart = (ref: any, data: any[], maxVotes: number) => {
-    if (!ref || data.length === 0) return;
+    if (!ref) return;
 
+    // Clear previous content
     d3.select(ref).selectAll("*").remove();
+
+    // If no data, exit early after clearing
+    if (data.length === 0) return;
 
     const margin = { top: 0, right: 30, bottom: 22, left: 0 };
     const width = containerWidth.value - margin.left - margin.right;
@@ -402,10 +408,11 @@ const redrawCharts = () => {
         const maxVotes21 = d3.sum(citywideData21.value, (d: any) => d.votes);
         const maxVotesCitywide = Math.max(maxVotes25, maxVotes21);
 
-        if (aggChart25Ref.value && citywideData25.value.length > 0) {
+        // Always call drawStackedChart
+        if (aggChart25Ref.value) {
             drawStackedChart(aggChart25Ref.value, citywideData25.value, maxVotesCitywide);
         }
-        if (aggChart21Ref.value && citywideData21.value.length > 0) {
+        if (aggChart21Ref.value) {
             drawStackedChart(aggChart21Ref.value, citywideData21.value, maxVotesCitywide);
         }
         return;
@@ -422,19 +429,19 @@ const redrawCharts = () => {
     const maxVotesAgg = Math.max(maxVotes25Agg, maxVotes21Agg);
 
     // ED charts
-    if (chart25Ref.value && data25.value.length > 0) {
+    if (chart25Ref.value) {
         drawStackedChart(chart25Ref.value, data25.value, maxVotesED);
     }
-    if (chart21Ref.value && data21.value.length > 0) {
+    if (chart21Ref.value) {
         drawStackedChart(chart21Ref.value, data21.value, maxVotesED);
     }
 
     // Aggregate charts
     if (hasFilteredData.value) {
-        if (aggChart25Ref.value && aggregateData25.value.length > 0) {
+        if (aggChart25Ref.value) {
             drawStackedChart(aggChart25Ref.value, aggregateData25.value, maxVotesAgg);
         }
-        if (aggChart21Ref.value && aggregateData21.value.length > 0) {
+        if (aggChart21Ref.value) {
             drawStackedChart(aggChart21Ref.value, aggregateData21.value, maxVotesAgg);
         }
     }
@@ -477,7 +484,8 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
             <!-- 2025 Citywide -->
             <div class="chart-section">
                 <div class="chart-title">
-                    <h3>2025 General (unofficial <span style="font-style: italic;">TEST</span> results)<br /><span style="font-weight: 200;">X% of scanners reported</span></h3>
+                    <h3>2025 General (unofficial <span style="font-style: italic;">TEST</span> results)<br /><span
+                            style="font-weight: 200;">{{ scannerPercent }}% of scanners reported</span></h3>
                 </div>
                 <div ref="aggChart25"></div>
                 <div class="results-table-container">
@@ -508,8 +516,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                         <tfoot>
                             <tr class="total-row">
                                 <td>
-                                    <button class="copy-button"
-                                        @click="copyTableToClipboard(citywideData25, true)"
+                                    <button class="copy-button" @click="copyTableToClipboard(citywideData25, true)"
                                         title="Copy table to clipboard">
                                         📋
                                     </button>
@@ -517,7 +524,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                 </td>
                                 <td></td>
                                 <td class="votes-cell"><strong>{{formatVotes(d3.sum(citywideData25, (d: any) =>
-                                        d.votes)) }}</strong></td>
+                                    d.votes))}}</strong></td>
                             </tr>
                         </tfoot>
                     </table>
@@ -559,8 +566,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                         <tfoot>
                             <tr class="total-row">
                                 <td>
-                                    <button class="copy-button"
-                                        @click="copyTableToClipboard(citywideData21, true)"
+                                    <button class="copy-button" @click="copyTableToClipboard(citywideData21, true)"
                                         title="Copy table to clipboard">
                                         📋
                                     </button>
@@ -568,7 +574,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                 </td>
                                 <td></td>
                                 <td class="votes-cell"><strong>{{formatVotes(d3.sum(citywideData21, (d: any) =>
-                                        d.votes)) }}</strong></td>
+                                    d.votes))}}</strong></td>
                             </tr>
                             <tr class="footernote">
                                 <td colspan="3">Totals may not add to 100% due to rounding.</td>
@@ -583,122 +589,6 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
             </div>
         </div>
 
-        <!-- Aggregate Charts - show when filters are active -->
-        <div v-if="hasFilteredData" class="aggregate-section">
-            <div class="section-header">
-                <p class="section-subtitle-text-body-1">Filtered results ({{
-                    filteredFeatures?.length.toLocaleString() }} election districts):</p>
-                <p class="section-subtitle-text-body-2">{{ filterLabelsText }}</p>
-            </div>
-
-            <!-- 2025 Aggregate -->
-            <div class="chart-section">
-                <div class="chart-title">
-                    <h3>2025 General (unofficial <span style="font-style: italic;">TEST</span> results)<br /><span style="font-weight: 200;">X% of scanners reported</span></h3>
-                </div>
-                <div ref="aggChart25"></div>
-                <div class="results-table-container">
-                    <table class="results-table">
-                        <thead>
-                            <tr>
-                                <th>Candidate</th>
-                                <th>Filtered %</th>
-                                <th>Votes</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(item, index) in aggregateData25" :key="index">
-                                <td>
-                                    <div class="candidate-cell">
-                                        <span class="color-indicator" :style="{ backgroundColor: item.color }"></span>
-                                        <span>{{ item.name }}</span>
-                                        <span v-if="index === 0 && aggregateData25.length > 1" class="margin-indicator">
-                                            +{{ Math.round((aggregateData25[0]?.percentage || 0) -
-                                                (aggregateData25[1]?.percentage || 0)) }} points
-                                        </span>
-                                    </div>
-                                </td>
-                                <td class="percentage-cell">{{ formatPercent(item.percentage) }}%</td>
-                                <td class="percentage-cell votes-cell">{{ formatVotes(item.votes) }}</td>
-                            </tr>
-                        </tbody>
-                        <tfoot>
-                            <tr class="total-row">
-                                <td>
-                                    <button class="copy-button"
-                                        @click="copyTableToClipboard(aggregateData25, true)"
-                                        title="Copy table to clipboard">
-                                        📋
-                                    </button>
-                                    <strong>Total</strong>
-                                </td>
-                                <td></td>
-                                <td class="votes-cell"><strong>{{formatVotes(d3.sum(aggregateData25, (d: any) =>
-                                        d.votes)) }}</strong></td>
-                            </tr>
-                        </tfoot>
-                    </table>
-
-                </div>
-            </div>
-
-            <!-- 2021 Aggregate -->
-            <div class="chart-section">
-                <div class="chart-title">
-                    <h3>2021 General (allocated to 2025 EDs)</h3>
-                </div>
-                <div ref="aggChart21"></div>
-                <div class="results-table-container">
-                    <table class="results-table">
-                        <thead>
-                            <tr>
-                                <th>Candidate</th>
-                                <th>Filtered %</th>
-                                <th>Votes</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(item, index) in aggregateData21" :key="index">
-                                <td>
-                                    <div class="candidate-cell">
-                                        <span class="color-indicator" :style="{ backgroundColor: item.color }"></span>
-                                        <span>{{ item.name }}</span>
-                                        <span v-if="index === 0 && aggregateData21.length > 1" class="margin-indicator">
-                                            +{{ Math.round((aggregateData21[0]?.percentage || 0) -
-                                                (aggregateData21[1]?.percentage || 0)) }} points
-                                        </span>
-                                    </div>
-                                </td>
-                                <td class="percentage-cell">{{ formatPercent(item.percentage) }}%</td>
-                                <td class="percentage-cell votes-cell">{{ formatVotes(item.votes) }}</td>
-                            </tr>
-                        </tbody>
-                        <tfoot>
-                            <tr class="total-row">
-                                <td>
-                                    <button class="copy-button"
-                                        @click="copyTableToClipboard(aggregateData21, true)"
-                                        title="Copy table to clipboard">
-                                        📋
-                                    </button>
-                                    <strong>Total</strong>
-                                </td>
-                                <td></td>
-                                <td class="votes-cell"><strong>{{formatVotes(d3.sum(aggregateData21, (d: any) =>
-                                        d.votes)) }}</strong></td>
-                            </tr>
-                            <tr class="footernote">
-                                <td colspan="3">Totals may not add to 100% due to rounding.</td>
-                            </tr>
-                            <tr class="footernote">
-                                <td colspan="3">2021 data omits write-in votes.</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-
-                </div>
-            </div>
-        </div>
         <div class="header" v-if="hoveredData">
             <div class="header-content">
                 <div>
@@ -706,7 +596,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                         (hasFilteredData
                             ?
                             edLabel :
-                        edLabel) }}</h3>
+                            edLabel) }}</h3>
                 </div>
                 <button v-if="hoveredData" class="close-button" @click="emit('close')" aria-label="Close">
                     ×
@@ -717,7 +607,8 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                 <!-- 2025 Election Chart -->
                 <div class="chart-section">
                     <div class="chart-title">
-                    <h3>2025 General (unofficial <span style="font-style: italic;">TEST</span> results)<br /><span style="font-weight: 200;">X% of scanners reported</span></h3>
+                        <h3>2025 General (unofficial <span style="font-style: italic;">TEST</span> results)<br /><span
+                                style="font-weight: 200;">{{ scannerPercent }}% of scanners reported</span></h3>
                     </div>
                     <div ref="chart25"></div>
                     <div class="results-table-container">
@@ -749,8 +640,8 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                             <tfoot>
                                 <tr class="total-row">
                                     <td>
-                                        <button class="copy-button"
-                                            @click="copyTableToClipboard(data25, true)" title="Copy table to clipboard">
+                                        <button class="copy-button" @click="copyTableToClipboard(data25, true)"
+                                            title="Copy table to clipboard">
                                             📋
                                         </button>
                                         <strong>Total</strong>
@@ -799,8 +690,8 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                             <tfoot>
                                 <tr class="total-row">
                                     <td>
-                                        <button class="copy-button"
-                                            @click="copyTableToClipboard(data21, true)" title="Copy table to clipboard">
+                                        <button class="copy-button" @click="copyTableToClipboard(data21, true)"
+                                            title="Copy table to clipboard">
                                             📋
                                         </button>
                                         <strong>Total</strong>
@@ -809,17 +700,144 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                                     <td class="votes-cell"><strong>{{formatVotes(d3.sum(data21, (d: any) => d.votes))
                                             }}</strong></td>
                                 </tr>
-                            <tr class="footernote">
-                                <td colspan="3">Totals may not add to 100% due to rounding.</td>
-                            </tr>
-                            <tr class="footernote">
-                                <td colspan="3">2021 data omits write-in votes.</td>
-                            </tr>
+                                <tr class="footernote">
+                                    <td colspan="3">Totals may not add to 100% due to rounding.</td>
+                                </tr>
+                                <tr class="footernote">
+                                    <td colspan="3">2021 data omits write-in votes.</td>
+                                </tr>
                             </tfoot>
                         </table>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Aggregate Charts - show when filters are active -->
+        <div v-if="hasFilteredData" class="aggregate-section">
+            <div class="section-header">
+                <p class="section-subtitle-text-body-1">Filtered results ({{
+                    filteredFeatures?.length.toLocaleString() }} election districts):</p>
+                <p class="section-subtitle-text-body-2">{{ filterLabelsText }}</p>
+            </div>
+
+            <!-- Empty state message -->
+            <div v-if="filteredFeatures && filteredFeatures.length === 0" class="empty-state">
+                <p>No election districts match this selection.</p>
+            </div>
+
+            <!-- 2025 Aggregate -->
+            <template v-if="filteredFeatures && filteredFeatures.length > 0">
+                <div class="chart-section">
+                    <div class="chart-title">
+                        <h3>2025 General (unofficial <span style="font-style: italic;">TEST</span> results)<br /><span
+                                style="font-weight: 200;">{{ scannerPercent }}% of scanners reported</span></h3>
+                    </div>
+                    <div ref="aggChart25"></div>
+                    <div class="results-table-container">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Candidate</th>
+                                    <th>Filtered %</th>
+                                    <th>Votes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(item, index) in aggregateData25" :key="index">
+                                    <td>
+                                        <div class="candidate-cell">
+                                            <span class="color-indicator"
+                                                :style="{ backgroundColor: item.color }"></span>
+                                            <span>{{ item.name }}</span>
+                                            <span v-if="index === 0 && aggregateData25.length > 1"
+                                                class="margin-indicator">
+                                                +{{ Math.round((aggregateData25[0]?.percentage || 0) -
+                                                    (aggregateData25[1]?.percentage || 0)) }} points
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="percentage-cell">{{ formatPercent(item.percentage) }}%</td>
+                                    <td class="percentage-cell votes-cell">{{ formatVotes(item.votes) }}</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="total-row">
+                                    <td>
+                                        <button class="copy-button" @click="copyTableToClipboard(aggregateData25, true)"
+                                            title="Copy table to clipboard">
+                                            📋
+                                        </button>
+                                        <strong>Total</strong>
+                                    </td>
+                                    <td></td>
+                                    <td class="votes-cell"><strong>{{formatVotes(d3.sum(aggregateData25, (d: any) =>
+                                        d.votes))}}</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                    </div>
+                </div>
+
+                <!-- 2021 Aggregate -->
+                <div class="chart-section">
+                    <div class="chart-title">
+                        <h3>2021 General (allocated to 2025 EDs)</h3>
+                    </div>
+                    <div ref="aggChart21"></div>
+                    <div class="results-table-container">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Candidate</th>
+                                    <th>Filtered %</th>
+                                    <th>Votes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(item, index) in aggregateData21" :key="index">
+                                    <td>
+                                        <div class="candidate-cell">
+                                            <span class="color-indicator"
+                                                :style="{ backgroundColor: item.color }"></span>
+                                            <span>{{ item.name }}</span>
+                                            <span v-if="index === 0 && aggregateData21.length > 1"
+                                                class="margin-indicator">
+                                                +{{ Math.round((aggregateData21[0]?.percentage || 0) -
+                                                    (aggregateData21[1]?.percentage || 0)) }} points
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="percentage-cell">{{ formatPercent(item.percentage) }}%</td>
+                                    <td class="percentage-cell votes-cell">{{ formatVotes(item.votes) }}</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="total-row">
+                                    <td>
+                                        <button class="copy-button" @click="copyTableToClipboard(aggregateData21, true)"
+                                            title="Copy table to clipboard">
+                                            📋
+                                        </button>
+                                        <strong>Total</strong>
+                                    </td>
+                                    <td></td>
+                                    <td class="votes-cell"><strong>{{formatVotes(d3.sum(aggregateData21, (d: any) =>
+                                        d.votes))}}</strong></td>
+                                </tr>
+                                <tr class="footernote">
+                                    <td colspan="3">Totals may not add to 100% due to rounding.</td>
+                                </tr>
+                                <tr class="footernote">
+                                    <td colspan="3">2021 data omits write-in votes.</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                    </div>
+                </div>
+            </template>
         </div>
 
         <!-- Scale Mode Toggle -->
@@ -902,6 +920,16 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+}
+
+.empty-state {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    border: 1px dashed #ddd;
 }
 
 .citywide-section {
