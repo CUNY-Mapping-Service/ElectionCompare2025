@@ -16,8 +16,8 @@ import cunygclogo from './cunygc_logo_cur.png'
 import NYED_GEOM from './stores/nyed25.json';
 import FILTER_DATA_RAW from './stores/filterdata.csv?raw'
 import METADATA from './stores/metadata.json'
-import RESULTS_DATA_RAW from './stores/test25results.csv?raw'
-// import RESULTS_DATA_RAW from './stores/unofficial25results.csv?raw'
+// import RESULTS_DATA_RAW from './stores/test25results.csv?raw'
+import RESULTS_DATA_RAW from './stores/unofficial25results.csv?raw'
 
 import InfoBox from './InfoBox.vue'
 import Legend from './Legend.vue';
@@ -92,7 +92,7 @@ const SETTINGS = {
 
         // Find the candidate column using the label
         // win25 is "Curtis Sliwa" get gen25cs
-        const candidate = COLOR_SCALE.candidates.find(c => c.label === d[winnerColumn]);
+        const candidate = COLOR_SCALE.candidates.find(c => c.id === d[winnerColumn]);
         if (!candidate) {
             return null;
         }

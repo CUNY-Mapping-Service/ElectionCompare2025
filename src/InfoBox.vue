@@ -484,7 +484,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
             <!-- 2025 Citywide -->
             <div class="chart-section">
                 <div class="chart-title">
-                    <h3>2025 General (unofficial <span style="font-style: italic;">TEST</span> results)<br /><span
+                    <h3>2025 General (unofficial results)<br /><span
                             style="font-weight: 200;">{{ scannerPercent }}% of scanners reported, per <a href="https://web.enrboenyc.us/" target="_blank">NYC BOE</a></span></h3>
                 </div>
                 <div ref="aggChart25"></div>
@@ -607,7 +607,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                 <!-- 2025 Election Chart -->
                 <div class="chart-section">
                     <div class="chart-title">
-                        <h3>2025 General (unofficial <span style="font-style: italic;">TEST</span> results)<br /><span
+                        <h3>2025 General (unofficial results)<br /><span
                                 style="font-weight: 200;">{{ scannerPercent }}% of scanners reported, per <a href="https://web.enrboenyc.us/" target="_blank">NYC BOE</a></span></h3>
                     </div>
                     <div ref="chart25"></div>
@@ -730,7 +730,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
             <template v-if="filteredFeatures && filteredFeatures.length > 0">
                 <div class="chart-section">
                     <div class="chart-title">
-                        <h3>2025 General (unofficial <span style="font-style: italic;">TEST</span> results)<br /><span
+                        <h3>2025 General (unofficial results)<br /><span
                                 style="font-weight: 200;">{{ scannerPercent }}% of scanners reported, per <a href="https://web.enrboenyc.us/" target="_blank">NYC BOE</a></span></h3>
                     </div>
                     <div ref="aggChart25"></div>
