@@ -485,7 +485,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
             <div class="chart-section">
                 <div class="chart-title">
                     <h3>2025 General (unofficial <span style="font-style: italic;">TEST</span> results)<br /><span
-                            style="font-weight: 200;">{{ scannerPercent }}% of scanners reported</span></h3>
+                            style="font-weight: 200;">{{ scannerPercent }}% of scanners reported, per <a href="https://web.enrboenyc.us/" target="_blank">NYC BOE</a></span></h3>
                 </div>
                 <div ref="aggChart25"></div>
                 <div class="results-table-container">
@@ -592,7 +592,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
         <div class="header" v-if="hoveredData">
             <div class="header-content">
                 <div>
-                    <h3><!-- You have selected:  -->{{ hasFilteredData && !hoveredData ? 'Filtered Districts' :
+                    <h3>SELECTED DISTRICT<br />{{ hasFilteredData && !hoveredData ? 'Filtered Districts' :
                         (hasFilteredData
                             ?
                             edLabel :
@@ -608,7 +608,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                 <div class="chart-section">
                     <div class="chart-title">
                         <h3>2025 General (unofficial <span style="font-style: italic;">TEST</span> results)<br /><span
-                                style="font-weight: 200;">{{ scannerPercent }}% of scanners reported</span></h3>
+                                style="font-weight: 200;">{{ scannerPercent }}% of scanners reported, per <a href="https://web.enrboenyc.us/" target="_blank">NYC BOE</a></span></h3>
                     </div>
                     <div ref="chart25"></div>
                     <div class="results-table-container">
@@ -716,7 +716,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
         <!-- Aggregate Charts - show when filters are active -->
         <div v-if="hasFilteredData" class="aggregate-section">
             <div class="section-header">
-                <p class="section-subtitle-text-body-1">Filtered results ({{
+                <p class="section-subtitle-text-body-1">Filtered citywide results ({{
                     filteredFeatures?.length.toLocaleString() }} election districts):</p>
                 <p class="section-subtitle-text-body-2">{{ filterLabelsText }}</p>
             </div>
@@ -731,7 +731,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                 <div class="chart-section">
                     <div class="chart-title">
                         <h3>2025 General (unofficial <span style="font-style: italic;">TEST</span> results)<br /><span
-                                style="font-weight: 200;">{{ scannerPercent }}% of scanners reported</span></h3>
+                                style="font-weight: 200;">{{ scannerPercent }}% of scanners reported, per <a href="https://web.enrboenyc.us/" target="_blank">NYC BOE</a></span></h3>
                     </div>
                     <div ref="aggChart25"></div>
                     <div class="results-table-container">
@@ -881,6 +881,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
     margin: 0;
     font-size: 16px;
     font-weight: 600;
+    padding-bottom: 5px;
 }
 
 .close-button {
@@ -953,6 +954,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
 
 .section-subtitle-text-body-1 {
     margin: 4px 0 0 0;
+    padding-top: 5px;
     color: #666;
     font-size: 1rem;
     font-weight: 600;
@@ -991,6 +993,14 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
     margin: 0;
     font-size: 14px;
     font-weight: 600;
+}
+
+.chart-title a, a:active {
+  color: blue;
+}
+
+.chart-title a:visited {
+  color: purple;
 }
 
 .total-votes {
