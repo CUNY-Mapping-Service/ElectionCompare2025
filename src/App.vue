@@ -16,8 +16,8 @@ import cunygclogo from './cunygc_logo_cur.png'
 import NYED_GEOM from './stores/nyed25.json';
 import FILTER_DATA_RAW from './stores/filterdata.csv?raw'
 import METADATA from './stores/metadata.json'
-const RESULTS_CSV_FILE = 'test25results.csv'
-// const RESULTS_CSV_FILE = 'unofficial25results.csv'
+// const RESULTS_CSV_FILE = 'test25results.csv'
+const RESULTS_CSV_FILE = 'unofficial25results.csv'
 
 import InfoBox from './InfoBox.vue'
 import Legend from './Legend.vue';
