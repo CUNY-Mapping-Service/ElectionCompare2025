@@ -9,14 +9,12 @@ import { isMapboxURL, transformMapboxUrl } from './libs/mapbox-transform';
 import * as d3 from "d3";
 import { Index } from 'flexsearch';
 
-// import cunygclogo from './cunygc_logo.png'
 import cunygclogo from './cunygc_logo_cur.png'
 
 
 import NYED_GEOM from './stores/nyed25.json';
 import FILTER_DATA_RAW from './stores/filterdata.csv?raw'
 import METADATA from './stores/metadata.json'
-// const RESULTS_CSV_FILE = 'test25results.csv'
 const RESULTS_CSV_FILE = 'unofficial25results.csv'
 
 import InfoBox from './InfoBox.vue'
@@ -27,7 +25,7 @@ const MAPBOX_KEY = 'pk.eyJ1IjoiY3VueWN1ciIsImEiOiJfQmNSMF9NIn0.uRgbcFeJbw2xyTUZY
 const MAPBOX_STYLE_URL = 'mapbox://styles/cunycur/cm2yzn8mp00ox01pa3oxc4syx';
 const COLOR_SCALE = {
     'breakpoints': [
-        0, /* 5, 10, */ 25, 50, 75/* , 100 */
+        1, /* 5, 10, */ 25, 50, 75/* , 100 */
     ],
     'total_id': 'gen25tot',
     'candidates': [
@@ -38,8 +36,7 @@ const COLOR_SCALE = {
             // each array needs to match the length of the breakpoints
 
             //Blue palette via ColorBrewer
-            // 'colors': ['#eff3ff', '#c6dbef', '#9ecae1', '#6baed6', '#3182bd', '#08519c']
-            'colors': ['#fff', '#c6dbef', '#9ecae1', /* '#6baed6',  */'#3182bd', '#08519c']
+            'colors': ['#fff', '#bdd7e7','#6baed6','#3182bd','#08519c']
         },
         {
             'id': 'gen25ac',
@@ -47,38 +44,28 @@ const COLOR_SCALE = {
             //Green palette via ColorBrewer
             // 'colors': ['#edf8e9', '#c7e9c0', '#a1d99b', '#74c476', '#31a354', '#006d2c']
             //YellowGreen palette via ColorBrewer
-            // 'colors': ['#ffffcc','#d9f0a3','#addd8e','#78c679','#31a354','#006837']
-            'colors': ['#fff','#d9f0a3','#addd8e', /* '#78c679', */ '#31a354', '#006837']
-            //Orange palette via ColorBrewer
-            // 'colors': ['#feedde','#fdd0a2','#fdae6b','#fd8d3c','#e6550d','#a63603']
+            'colors': ['#fff', '#c2e699','#78c679','#31a354','#006837']
         },
-        /*         {
-            'id': 'gen25cs',
-            'label': 'Curtis Sliwa',
-            'colors': ['#feedde', '#fdd0a2', '#fdae6b', '#fd8d3c', '#e6550d', '#a63603']
-        }, */
         {
             'id': 'gen25cs',
             'label': 'Curtis Sliwa',
             //Red palette via ColorBrewer
-            // 'colors': ['#fee5d9', '#fcbba1', '#fc9272', '#fb6a4a', '#de2d26', '#a50f15']
-            'colors': ['#fff', '#fcbba1', '#fc9272', /* '#fb6a4a', */ '#de2d26', '#a50f15']
+            'colors': ['#fff', '#fcae91','#fb6a4a','#de2d26','#a50f15']
         },
         {
             'id': 'gen25ea',
             'label': 'Eric Adams',
             //Purple palette via ColorBrewer
-            // 'colors': ['#f2f0f7', '#dadaeb', '#bcbddc', '#9e9ac8', '#756bb1', '#54278f']
+            // 'colors': ['#fff','#cbc9e2','#9e9ac8','#756bb1','#54278f']
             //Purple palette via Material Design https://m2.material.io/design/color/the-color-system.html#tools-for-picking-colors
             // 'colors': ['#F3E5F5', '#E1BEE7', '#CE93D8', '#AB47BC', '#8E24AA', '#6A1B9A']
-            'colors': ['#fff', '#E1BEE7', '#CE93D8', /* '#AB47BC', */ '#8E24AA', '#6A1B9A']
+            'colors': ['#fff', '#E1BEE7', '#CE93D8', '#AB47BC', /* '#8E24AA', */ '#7B1FA2']
         }
     ],
     'other': {
         'id': 'gen25othr',
         'label': 'Other',
         //Gray palette via ColorBrewer
-        // 'colors': ['#f7f7f7', '#d9d9d9', '#bdbdbd', '#969696', '#636363', '#252525']
         'colors': ['#fff', '#d9d9d9', '#bdbdbd', /* '#969696', */ '#636363', '#252525']
     }
 }
@@ -147,7 +134,7 @@ const features = ref<any[]>([])
 
 
 // Map state for URL sync
-const mapCenter = ref<[number, number]>([-73.92033, 40.71735])
+const mapCenter = ref<[number, number]>([-73.9769, 40.72103])
 const mapZoom = ref<number>(10.5)
 /* const mapCenter = ref<[number, number]>([-73.9438, 40.710])
 const mapZoom = ref<number>(10) */
@@ -668,7 +655,23 @@ onMounted(async () => {
                 'visibility': 'none',
                 'text-field': ['get', 'name'],
                 'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
-                'text-size': 10
+                "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          0,
+          10,
+          0,
+          12,
+          10,
+          22,
+          11
+        ],
             },
             'paint': {
                 'text-color': '#000000',
