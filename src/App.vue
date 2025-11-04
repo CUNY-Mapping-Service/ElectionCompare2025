@@ -16,8 +16,8 @@ import cunygclogo from './cunygc_logo_cur.png'
 import NYED_GEOM from './stores/nyed25.json';
 import FILTER_DATA_RAW from './stores/filterdata.csv?raw'
 import METADATA from './stores/metadata.json'
-// import RESULTS_DATA_RAW from './stores/test25results.csv?raw'
-import RESULTS_DATA_RAW from './stores/unofficial25results.csv?raw'
+const RESULTS_CSV_FILE = 'test25results.csv'
+// const RESULTS_CSV_FILE = 'unofficial25results.csv'
 
 import InfoBox from './InfoBox.vue'
 import Legend from './Legend.vue';
@@ -122,54 +122,6 @@ const FILTER_PROPERTIES = new Map(
     parsedFilterData.map(({ aded25, ...rest }) => [String(aded25), rest])
 );
 
-const parsedResultsData = d3.csvParse(RESULTS_DATA_RAW, d3.autoType) as any[];
-const RESULTS_PROPERTIES = new Map(
-    parsedResultsData.map(({ aded25, ...rest }) => [String(aded25), rest])
-);
-
-const features = NYED_GEOM.features.map((d: any) => {
-    const aded25 = String(d.properties.aded25);
-    const filterProps = FILTER_PROPERTIES.get(aded25) || {};
-    const resultsProps = RESULTS_PROPERTIES.get(aded25) || {};
-
-    d.properties = {
-        ...d.properties,
-        ...filterProps,
-        ...resultsProps
-    };
-
-    // Calculate percentages for 2025, round first
-    const gen25total = Math.round(d.properties.gen25tot || 0);
-    d.properties.gen25zm = Math.round(d.properties.gen25zm || 0);
-    d.properties.gen25ac = Math.round(d.properties.gen25ac || 0);
-    d.properties.gen25cs = Math.round(d.properties.gen25cs || 0);
-    d.properties.gen25ea = Math.round(d.properties.gen25ea || 0);
-    d.properties.gen25othr = Math.round(d.properties.gen25othr || 0);
-
-    if (gen25total > 0) {
-        d.properties.gen25zm_pct = (d.properties.gen25zm / gen25total) * 100;
-        d.properties.gen25ac_pct = (d.properties.gen25ac / gen25total) * 100;
-        d.properties.gen25cs_pct = (d.properties.gen25cs / gen25total) * 100;
-        d.properties.gen25ea_pct = (d.properties.gen25ea / gen25total) * 100;
-        d.properties.gen25othr_pct = (d.properties.gen25othr / gen25total) * 100;
-    }
-
-    // Calculate percentages for 2021
-    const gen21total = Math.round(d.properties.gen21tot || 0);
-    d.properties.gen21ea = Math.round(d.properties.gen21ea || 0);
-    d.properties.gen21cs = Math.round(d.properties.gen21cs || 0);
-    d.properties.gen21othr = Math.round(d.properties.gen21othr || 0);
-
-    if (gen21total > 0) {
-        d.properties.gen21ea_pct = (d.properties.gen21ea / gen21total) * 100;
-        d.properties.gen21cs_pct = (d.properties.gen21cs / gen21total) * 100;
-        d.properties.gen21othr_pct = (d.properties.gen21othr / gen21total) * 100;
-    }
-
-    d.properties.color = SETTINGS.getColor(d.properties);
-    return d;
-});
-
 // state
 const hoveredId = ref<string | number | null>(null)
 const clickedId = ref<string | number | null>(null)
@@ -180,6 +132,7 @@ const showSearchResults = ref(false)
 const showCityCouncil = ref(false)
 const showNYCHA = ref(false)
 const showSubway = ref(false)
+const features = ref<any[]>([])
 
 
 // Map state for URL sync
@@ -210,7 +163,7 @@ const hoveredData = computed(() => {
     if (!activeId.value) return null;
 
     // Find the feature with the matching ID
-    const feature = features.find((f: any) => f.properties[SETTINGS.promoteId] === activeId.value);
+    const feature = features.value.find((f: any) => f.properties[SETTINGS.promoteId] === activeId.value);
 
     if (!feature) return null;
 
@@ -226,7 +179,7 @@ const filteredDistricts = computed(() => {
         return [];
     }
 
-    return features.filter((feature: any) => {
+    return features.value.filter((feature: any) => {
         // Check if feature matches all selected filters
         return selectedFilters.value.every(filter => {
             return feature.properties[filter.column] === 1;
@@ -283,7 +236,7 @@ function loadFromURL() {
 
     const ed = params.get('ed')
     if (ed) {
-        const feature = features.find((f: any) => String(f.properties[SETTINGS.promoteId]) === ed)
+        const feature = features.value.find((f: any) => String(f.properties[SETTINGS.promoteId]) === ed)
         if (feature) {
             clickedId.value = feature.properties[SETTINGS.promoteId]
         }
@@ -367,9 +320,59 @@ function buildFilterExpression(): any[] {
     return ['all', ...conditions];
 }
 
-onMounted(() => {
+onMounted(async () => {
     // Load state from URL first
     loadFromURL()
+
+    // Fetch the results data
+    const parsedResultsData = await d3.csv(`${import.meta.env.BASE_URL}${RESULTS_CSV_FILE}`, d3.autoType) as any[];
+    const RESULTS_PROPERTIES = new Map(
+        parsedResultsData.map(({ aded25, ...rest }) => [String(aded25), rest])
+    );
+
+    // Process features with the fetched data
+    features.value = NYED_GEOM.features.map((d: any) => {
+        const aded25 = String(d.properties.aded25);
+        const filterProps = FILTER_PROPERTIES.get(aded25) || {};
+        const resultsProps = RESULTS_PROPERTIES.get(aded25) || {};
+
+        d.properties = {
+            ...d.properties,
+            ...filterProps,
+            ...resultsProps
+        };
+
+        // Calculate percentages for 2025, round first
+        const gen25total = Math.round(d.properties.gen25tot || 0);
+        d.properties.gen25zm = Math.round(d.properties.gen25zm || 0);
+        d.properties.gen25ac = Math.round(d.properties.gen25ac || 0);
+        d.properties.gen25cs = Math.round(d.properties.gen25cs || 0);
+        d.properties.gen25ea = Math.round(d.properties.gen25ea || 0);
+        d.properties.gen25othr = Math.round(d.properties.gen25othr || 0);
+
+        if (gen25total > 0) {
+            d.properties.gen25zm_pct = (d.properties.gen25zm / gen25total) * 100;
+            d.properties.gen25ac_pct = (d.properties.gen25ac / gen25total) * 100;
+            d.properties.gen25cs_pct = (d.properties.gen25cs / gen25total) * 100;
+            d.properties.gen25ea_pct = (d.properties.gen25ea / gen25total) * 100;
+            d.properties.gen25othr_pct = (d.properties.gen25othr / gen25total) * 100;
+        }
+
+        // Calculate percentages for 2021
+        const gen21total = Math.round(d.properties.gen21tot || 0);
+        d.properties.gen21ea = Math.round(d.properties.gen21ea || 0);
+        d.properties.gen21cs = Math.round(d.properties.gen21cs || 0);
+        d.properties.gen21othr = Math.round(d.properties.gen21othr || 0);
+
+        if (gen21total > 0) {
+            d.properties.gen21ea_pct = (d.properties.gen21ea / gen21total) * 100;
+            d.properties.gen21cs_pct = (d.properties.gen21cs / gen21total) * 100;
+            d.properties.gen21othr_pct = (d.properties.gen21othr / gen21total) * 100;
+        }
+
+        d.properties.color = SETTINGS.getColor(d.properties);
+        return d;
+    });
 
     // Init map and add json layer
     const map = new MaplibreMap({
@@ -422,7 +425,7 @@ onMounted(() => {
         // Add data and styles
         map.addSource('map-source', {
             type: 'geojson',
-            data: { "type": "FeatureCollection", features: features },
+            data: { "type": "FeatureCollection", features: features.value },
             promoteId: SETTINGS.promoteId
         })
 
@@ -751,7 +754,8 @@ onMounted(() => {
                             alt="CUNY GC Logo" class="cuny-logo"></a>
                 </div>
                 <Legend :COLOR_SCALE="COLOR_SCALE" :showCityCouncil="showCityCouncil" :showNYCHA="showNYCHA"
-                    @update:showCityCouncil="showCityCouncil = $event" @update:showSubway="showSubway = $event" @update:showNYCHA="showNYCHA = $event" />
+                    @update:showCityCouncil="showCityCouncil = $event" @update:showSubway="showSubway = $event"
+                    @update:showNYCHA="showNYCHA = $event" />
             </div>
         </div>
 
