@@ -44,7 +44,7 @@ const COLOR_SCALE = {
             //Green palette via ColorBrewer
             // 'colors': ['#edf8e9', '#c7e9c0', '#a1d99b', '#74c476', '#31a354', '#006d2c']
             //YellowGreen palette via ColorBrewer
-            'colors': ['#fff', '#c2e699','#78c679','#31a354','#006837']
+            'colors': ['#fff', '#ffffcc','#addd8e','#31a354','#006837']
         },
         {
             'id': 'gen25cs',
@@ -59,7 +59,7 @@ const COLOR_SCALE = {
             // 'colors': ['#fff','#cbc9e2','#9e9ac8','#756bb1','#54278f']
             //Purple palette via Material Design https://m2.material.io/design/color/the-color-system.html#tools-for-picking-colors
             // 'colors': ['#F3E5F5', '#E1BEE7', '#CE93D8', '#AB47BC', '#8E24AA', '#6A1B9A']
-            'colors': ['#fff', '#E1BEE7', '#CE93D8', '#AB47BC', /* '#8E24AA', */ '#7B1FA2']
+            'colors': ['#fff', '#F3E5F5', '#CE93D8', '#9C27B0', /* '#8E24AA', */ '#6A1B9A']
         }
     ],
     'other': {
