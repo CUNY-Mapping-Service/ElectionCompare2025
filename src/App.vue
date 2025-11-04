@@ -214,7 +214,6 @@ function updateURL() {
 
 function loadFromURL() {
     const params = new URLSearchParams(window.location.search)
-
     // Load filters
     const filtersParam = params.get('filters')
     if (filtersParam) {
@@ -319,9 +318,6 @@ function buildFilterExpression(): any[] {
 }
 
 onMounted(async () => {
-    // Load state from URL first
-    loadFromURL()
-
     // Fetch the results data
     const parsedResultsData = await d3.csv(`${import.meta.env.BASE_URL}${RESULTS_CSV_FILE}`, d3.autoType) as any[];
     const RESULTS_PROPERTIES = new Map(
@@ -371,6 +367,10 @@ onMounted(async () => {
         d.properties.color = SETTINGS.getColor(d.properties);
         return d;
     });
+
+    // Load state from URL after data is loaded
+    loadFromURL()
+
 
     // Init map and add json layer
     const map = new MaplibreMap({
@@ -777,7 +777,6 @@ onMounted(async () => {
             if (e.features && e.features.length > 0) {
                 const featureId = e.features[0]?.id ?? null;
                 clickedId.value = featureId;
-                console.log(e.features[0])
             }
         });
 
