@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-const { COLOR_SCALE, showCityCouncil, showNYCHA } = defineProps(['COLOR_SCALE', 'showCityCouncil', 'showNYCHA'])
+const { COLOR_SCALE, showCityCouncil, showNYCHA, showSubway } = defineProps(['COLOR_SCALE', 'showCityCouncil', 'showNYCHA', 'showSubway'])
 
 const emit = defineEmits<{
     'update:showCityCouncil': [value: boolean]
+    'update:showSubway': [value: boolean]
     'update:showNYCHA': [value: boolean]
 }>()
 
@@ -44,6 +45,11 @@ function getLabelText(index: number) {
                         <input type="checkbox" :checked="showCityCouncil"
                             @change="emit('update:showCityCouncil', ($event.target as HTMLInputElement).checked)" />
                         <span>City Council</span>
+                    </label>
+                    <label class="layer-toggle-option">
+                        <input type="checkbox" :checked="showSubway"
+                            @change="emit('update:showSubway', ($event.target as HTMLInputElement).checked)" />
+                        <span>Subways</span>
                     </label>
                     <label class="layer-toggle-option">
                         <input type="checkbox" :checked="showNYCHA"

@@ -179,6 +179,8 @@ const searchResults = ref<Array<{ column: string; label: string; short_label: st
 const showSearchResults = ref(false)
 const showCityCouncil = ref(false)
 const showNYCHA = ref(false)
+const showSubway = ref(false)
+
 
 // Map state for URL sync
 const mapCenter = ref<[number, number]>([-73.92227, 40.71772])
@@ -396,6 +398,13 @@ onMounted(() => {
     ]).then(() => {
 
         // Add overlay sources
+        map.addSource('subway-source', {
+            type: 'vector',
+            tiles: ['https://www.urbanresearchmaps.org/tiles/common.imagenyc_subwayroutes.geom/{z}/{x}/{y}'],
+            minzoom: 0,
+            maxzoom: 14
+        });
+
         map.addSource('citycouncil-source', {
             type: 'vector',
             tiles: ['https://www.urbanresearchmaps.org/tiles/common.wrm_citycouncil.geom,common.wrm_citycouncil.geom_pt/{z}/{x}/{y}'],
@@ -487,7 +496,7 @@ onMounted(() => {
             },
             'paint': {
                 'line-color': '#4d4d4d',
-                'line-width': 1.5
+                'line-width': 2
             }
         });
 
@@ -508,6 +517,28 @@ onMounted(() => {
                 'text-halo-width': 1
             }
         });
+
+        
+        // Add NYC Subway layers
+        map.addLayer({
+            'id': 'subway-line',
+            'type': 'line',
+            'source': 'subway-source',
+            'source-layer': 'common.imagenyc_subwayroutes.geom',
+            'layout': {
+                'visibility': 'none'
+            },
+      "paint": {
+        "line-color": [
+          "get",
+          "linecolor"
+        ],
+        "line-opacity": 1,
+        "line-width": 2,
+        "line-gap-width": 0
+      }
+        }, 'citycouncil-line');
+
 
         // Add NYCHA layers
         map.addLayer({
@@ -586,6 +617,12 @@ onMounted(() => {
             map.setLayoutProperty('nycha-label', 'visibility', visibility);
         });
 
+        // Watch for Subway layer toggle
+        watch(showSubway, (newValue) => {
+            const visibility = newValue ? 'visible' : 'none';
+            map.setLayoutProperty('subway-line', 'visibility', visibility);
+            // map.setLayoutProperty('subway-label', 'visibility', visibility);
+        });
 
         // Add hover interactions
         let hoveredBeforeId: string | number | null = null;
@@ -714,7 +751,7 @@ onMounted(() => {
                             alt="CUNY GC Logo" class="cuny-logo"></a>
                 </div>
                 <Legend :COLOR_SCALE="COLOR_SCALE" :showCityCouncil="showCityCouncil" :showNYCHA="showNYCHA"
-                    @update:showCityCouncil="showCityCouncil = $event" @update:showNYCHA="showNYCHA = $event" />
+                    @update:showCityCouncil="showCityCouncil = $event" @update:showSubway="showSubway = $event" @update:showNYCHA="showNYCHA = $event" />
             </div>
         </div>
 
