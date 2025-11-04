@@ -441,25 +441,6 @@ onMounted(async () => {
             }
         }, 'county-outline')
 
-        map.addLayer({
-            'id': 'map-line',
-            'type': 'line',
-            'source': 'map-source',
-            'layout': {},
-            'paint': {
-                'line-color': '#0fff',
-                'line-width': 3,
-                'line-opacity': [
-                    'case',
-                    ['boolean', ['feature-state', 'hover'], false],
-                    1,
-                    ['boolean', ['feature-state', 'clicked'], false],
-                    1,
-                    0
-                ]
-            }
-        }, 'county-outline')
-
         // Add mask layer that covers non-matching districts
         // @ts-ignore
         map.addLayer({
@@ -521,7 +502,7 @@ onMounted(async () => {
             }
         });
 
-        
+
         // Add NYC Subway layers
         map.addLayer({
             'id': 'subway-line',
@@ -531,16 +512,16 @@ onMounted(async () => {
             'layout': {
                 'visibility': 'none'
             },
-      "paint": {
-        "line-color": [
-          "get",
-          "linecolor"
-        ],
-        "line-opacity": 1,
-        "line-width": 2,
-        "line-gap-width": 0
-      }
-        }, 'citycouncil-line');
+            "paint": {
+                "line-color": [
+                    "get",
+                    "linecolor"
+                ],
+                "line-opacity": 1,
+                "line-width": 2,
+                "line-gap-width": 0
+            }
+        }, 'county-outline');
 
 
         // Add NYCHA layers
@@ -589,6 +570,25 @@ onMounted(async () => {
                 'text-halo-width': 1
             }
         });
+
+        map.addLayer({
+            'id': 'map-line',
+            'type': 'line',
+            'source': 'map-source',
+            'layout': {},
+            'paint': {
+                'line-color': '#0fff',
+                'line-width': 3,
+                'line-opacity': [
+                    'case',
+                    ['boolean', ['feature-state', 'hover'], false],
+                    1,
+                    ['boolean', ['feature-state', 'clicked'], false],
+                    1,
+                    0
+                ]
+            }
+        })
 
         // Apply clicked state from URL
         if (clickedId.value !== null) {
