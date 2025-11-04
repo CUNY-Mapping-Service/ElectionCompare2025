@@ -28,10 +28,10 @@ function toggleExpanded() {
 function getLabelText(index: number) {
     const breakpoint = COLOR_SCALE.breakpoints[index];
     const nextBreakpoint = COLOR_SCALE.breakpoints[index + 1];
-    if (breakpoint === 5) {
+    if (nextBreakpoint) {
         return `${breakpoint} - ${nextBreakpoint}%`
     }
-    return `${breakpoint} - ${nextBreakpoint}`
+    return `${breakpoint} - 100`
 }
 </script>
 <template>
@@ -71,11 +71,11 @@ function getLabelText(index: number) {
                 </div>
 
                 <!-- swatches and labels -->
-                <div v-for="(breakpoint, index) in COLOR_SCALE.breakpoints.slice(0, -1)" :key="index"
+                <div v-for="(breakpoint, index) in COLOR_SCALE.breakpoints" :key="index"
                     class="legend-row">
                     <div v-for="candidate in COLOR_SCALE.candidates" :key="`${candidate.id}-${index}`"
                         class="swatch-cell">
-                        <span class="swatch" :style="`background-color: ${candidate.colors[index]}`"></span>
+                        <span class="swatch" :style="`background-color: ${candidate.colors[index + 1]}`"></span>
                     </div>
                     <div class="label-cell">
                         <span>{{ getLabelText(index) }}</span>
