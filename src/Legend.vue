@@ -132,8 +132,8 @@ function getLabelText(index: number) {
 .layer-toggle {
     pointer-events: auto;
     background-color: rgba(255, 255, 255, 0.95);
-    padding: 0.5rem;
-    margin-bottom: 0.5rem;
+    padding: 0.2rem 0.4rem;
+    margin-bottom: 5px;
     border-radius: 4px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     border: 1px solid #ccc;
@@ -143,13 +143,13 @@ function getLabelText(index: number) {
     font-size: 0.75rem;
     font-weight: 600;
     color: #333;
-    margin-bottom: 0.35rem;
+    margin-bottom: 0;
 }
 
 .layer-toggle-options {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: 2px;
 }
 
 .layer-toggle-option {
@@ -242,7 +242,7 @@ function getLabelText(index: number) {
 .subtitle {
     font-size: 0.8rem;
     letter-spacing: -1px;
-    margin: 0.15rem 0 0 0;
+    margin: 0;
     text-align: right;
     text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
 }

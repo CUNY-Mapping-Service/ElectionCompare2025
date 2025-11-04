@@ -398,7 +398,10 @@ onMounted(async () => {
     // Wait for maps to load before creating the comparison
     Promise.all([
         new Promise(resolve => map.on('load', resolve))
-    ]).then(() => {
+    ]).then(async () => {
+        // Load sprites
+        const image = await map.loadImage(`${import.meta.env.BASE_URL}sprites/circle.png`);
+        if (!map.hasImage('sub-circle')) map.addImage('sub-circle', image.data, { "sdf": true });
 
         // Add overlay sources
         map.addSource('subway-source', {
@@ -521,7 +524,99 @@ onMounted(async () => {
                 "line-width": 2,
                 "line-gap-width": 0
             }
-        }, 'county-outline');
+        }, 'boro-outline');
+
+        map.addLayer({
+            'id': 'subway-label',
+            'type': 'symbol',
+            'source': 'subway-source',
+            'source-layer': 'common.imagenyc_subwayroutes.geom',
+            "layout": {
+                "text-field": "{lineid}",
+                "symbol-placement": "line",
+                "text-size": 12,
+                "icon-allow-overlap": true,
+                "icon-ignore-placement": false,
+                "icon-optional": true,
+                "text-optional": false,
+                "visibility": "none",
+                "icon-image": "sub-circle",
+                "text-keep-upright": false,
+                "icon-rotation-alignment": "viewport",
+                "symbol-avoid-edges": false,
+                "symbol-spacing": 250,
+                "icon-text-fit": "none",
+                "icon-padding": 5,
+                "text-rotation-alignment": "viewport",
+                "text-pitch-alignment": "viewport",
+                "text-allow-overlap": false,
+                "text-ignore-placement": false,
+                "text-max-width": 12,
+                "text-variable-anchor": [
+                    "center"
+                ],
+                "symbol-z-order": "auto",
+                "text-anchor": "center",
+                "icon-text-fit-padding": [
+                    0,
+                    0,
+                    0,
+                    0
+                ],
+                "text-padding": 0,
+                "text-offset": [
+                    0,
+                    0
+                ],
+                "text-letter-spacing": 0,
+                "text-font": [
+                    "literal",
+                    [
+                        "Arial Unicode MS Bold",
+                        "Open Sans Bold"
+                    ]
+                ],
+                "icon-size": 0.25
+            },
+            "paint": {
+                "text-color": [
+                    "match",
+                    [
+                        "get",
+                        "lineid"
+                    ],
+                    "N",
+                    "#000",
+                    "Q",
+                    "#000",
+                    "R",
+                    "#000",
+                    "W",
+                    "#000",
+                    "Air",
+                    "#000",
+                    "#fff"
+                ],
+                "text-halo-color": [
+                    "get",
+                    "linecolor"
+                ],
+                "icon-halo-width": 0,
+                "icon-halo-blur": 0,
+                "text-halo-width": 0,
+                "text-halo-blur": 4,
+                "icon-translate-anchor": "map",
+                "icon-color": [
+                    "get",
+                    "linecolor"
+                ],
+                "icon-translate": [
+                    0,
+                    0
+                ],
+                "icon-opacity": 1
+            }
+        }, 'boro-outline');
 
 
         // Add NYCHA layers
@@ -624,7 +719,7 @@ onMounted(async () => {
         watch(showSubway, (newValue) => {
             const visibility = newValue ? 'visible' : 'none';
             map.setLayoutProperty('subway-line', 'visibility', visibility);
-            // map.setLayoutProperty('subway-label', 'visibility', visibility);
+            map.setLayoutProperty('subway-label', 'visibility', visibility);
         });
 
         // Add hover interactions
