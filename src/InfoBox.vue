@@ -4,6 +4,7 @@ import * as d3 from 'd3';
 
 const formatPercent = d3.format('.1f');
 const formatVotes = d3.format(',.0f');
+const formatVotesCompact = d3.format('.3~s');
 
 interface FeatureProperties {
     [key: string]: any;
@@ -300,9 +301,9 @@ const drawStackedChart = (ref: any, data: any[], maxVotes: number) => {
     // If no data, exit early after clearing
     if (data.length === 0) return;
 
-    const margin = { top: 0, right: 30, bottom: 22, left: 0 };
+    const margin = { top: 0, right: 30, bottom: 0, left: 0 };
     const width = containerWidth.value - margin.left - margin.right;
-    const height = 10;
+    const height = 12 * 2;
 
     const svg = d3.select(ref)
         .append('svg')
@@ -353,7 +354,15 @@ const drawStackedChart = (ref: any, data: any[], maxVotes: number) => {
         .attr('height', height)
         .attr('fill', (d: any) => d3.rgb(d.color).brighter(0.4).toString())
         .attr('stroke', '#333')
-        .attr('stroke-width', 1);
+        .attr('stroke-width', 1)
+        .append('title')
+        .text((d: any, i: number) => {
+            if (scaleMode.value === 'percentage') {
+                return d.name + ' : '  + formatPercent(d.percentage) + (i >= 0 ? '%' : '');
+            } else {
+                return d.name + ' has votes: ' + formatVotes(d.votes);
+            }
+        });
 
     // Labels below bar
     svg.selectAll('.bar-label')
@@ -361,21 +370,19 @@ const drawStackedChart = (ref: any, data: any[], maxVotes: number) => {
         .enter()
         .append('text')
         .attr('class', 'bar-label')
-        .attr('x', (d: any) => x(d.start))
-        .attr('y', (d: any, i: number) => 18 + (i % 2) * 10) // Stagger based on index
+        .attr('x', (d: any) => x(d.start) + 1)
+        .attr('y', (d: any, i: number) => 12)
         .attr('text-anchor', 'start')
         .attr('dy', '0.35em')
         .attr('font-size', '12px')
-        .attr('font-weight', '600')
         .attr('font-family', 'monospace')
-        .attr('fill', '#666')
         .text((d: any, i: number) => {
+            // hide label if less than 5%
+            if (i !== 0 && d.percentage < 5) return '';
             if (scaleMode.value === 'percentage') {
-                if (i !== 0 && d.percentage < 1) return '';
-                return formatPercent(d.percentage) + (i >= 0 ? '%' : '');
+                return formatPercent(d.percentage) + (i === 0 ? '%' : '');
             } else {
-                if (i !== 0 && d.votes < 2) return '';
-                return i === 0 ? 'Votes:' + formatVotes(d.votes) : formatVotes(d.votes);
+                return i === 0 ? 'Votes:' + formatVotesCompact(d.votes) : formatVotesCompact(d.votes);
             }
         });
 };
@@ -1161,7 +1168,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
 }
 
 :deep(.bar-label) {
-    fill: #666;
+    fill: #ffffff;
 }
 
 /* Scale Toggle Styles */
