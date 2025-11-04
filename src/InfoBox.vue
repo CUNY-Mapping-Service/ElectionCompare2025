@@ -77,7 +77,7 @@ const aggregateData25 = computed(() => {
     const totals: { [key: string]: { votes: number, name: string, color: string } } = {};
 
     candidates.forEach((c: any) => {
-        totals[c.id] = { votes: 0, name: c.label, color: c.colors[4] };
+        totals[c.id] = { votes: 0, name: c.label, color: c.colors[3] };
     });
 
     // Add 'other' to totals
@@ -86,7 +86,7 @@ const aggregateData25 = computed(() => {
     totals[otherScale.id] = {
         votes: 0,
         name: otherScale.label,
-        color: otherScale.colors[4]
+        color: otherScale.colors[3]
     };
 
 
@@ -119,9 +119,9 @@ const aggregateData21 = computed(() => {
     if (!hasFilteredData.value) return [];
 
     const totals = {
-        ea: { votes: 0, name: 'Eric Adams', color: props.COLOR_SCALE.candidates[3].colors[4] },
-        cs: { votes: 0, name: 'Curtis Sliwa', color: props.COLOR_SCALE.candidates[2].colors[4] },
-        other: { votes: 0, name: 'Other', color: props.COLOR_SCALE.other.colors[4] }
+        ea: { votes: 0, name: 'Eric Adams', color: props.COLOR_SCALE.candidates[3].colors[3] },
+        cs: { votes: 0, name: 'Curtis Sliwa', color: props.COLOR_SCALE.candidates[2].colors[3] },
+        other: { votes: 0, name: 'Other', color: props.COLOR_SCALE.other.colors[3] }
     };
 
     props.filteredFeatures!.forEach(feature => {
@@ -151,7 +151,7 @@ const citywideData25 = computed(() => {
     const totals: { [key: string]: { votes: number, name: string, color: string } } = {};
 
     candidates.forEach((c: any) => {
-        totals[c.id] = { votes: 0, name: c.label, color: c.colors[4] };
+        totals[c.id] = { votes: 0, name: c.label, color: c.colors[3] };
     });
 
     // Add 'other' to totals
@@ -159,7 +159,7 @@ const citywideData25 = computed(() => {
     totals[otherScale.id] = {
         votes: 0,
         name: props.COLOR_SCALE.other.label,
-        color: props.COLOR_SCALE.other.colors[4]
+        color: props.COLOR_SCALE.other.colors[3]
     };
 
     props.allFeatures.forEach(feature => {
@@ -191,9 +191,9 @@ const citywideData21 = computed(() => {
     if (!props.allFeatures || props.allFeatures.length === 0) return [];
 
     const totals = {
-        ea: { votes: 0, name: 'Eric Adams', color: props.COLOR_SCALE.candidates[3].colors[4] },
-        cs: { votes: 0, name: 'Curtis Sliwa', color: props.COLOR_SCALE.candidates[2].colors[4] },
-        other: { votes: 0, name: 'Other', color: props.COLOR_SCALE.other.colors[4] }
+        ea: { votes: 0, name: 'Eric Adams', color: props.COLOR_SCALE.candidates[3].colors[3] },
+        cs: { votes: 0, name: 'Curtis Sliwa', color: props.COLOR_SCALE.candidates[2].colors[3] },
+        other: { votes: 0, name: 'Other', color: props.COLOR_SCALE.other.colors[3] }
     };
 
     props.allFeatures.forEach(feature => {
@@ -226,13 +226,13 @@ const data25 = computed(() => {
             name: c.label,
             percentage: props.hoveredData!.properties[`${c.id}_pct`] || 0,
             votes: props.hoveredData!.properties[c.id] || 0,
-            color: c.colors[4],
+            color: c.colors[3],
         })),
     {
         name: props.COLOR_SCALE.other.label,
         percentage: props.hoveredData!.properties[`${props.COLOR_SCALE.other.id}_pct`] || 0,
         votes: props.hoveredData!.properties[props.COLOR_SCALE.other.id] || 0,
-        color: props.COLOR_SCALE.other.colors[4],
+        color: props.COLOR_SCALE.other.colors[3],
     }]
         .filter((d: any) => d.votes > 0)
         .sort((a: any, b: any) => b.percentage - a.percentage);
@@ -247,19 +247,19 @@ const data21 = computed(() => {
             name: 'Eric Adams',
             percentage: props.hoveredData.properties.gen21ea_pct || 0,
             votes: props.hoveredData.properties.gen21ea || 0,
-            color: props.COLOR_SCALE.candidates[3].colors[4],
+            color: props.COLOR_SCALE.candidates[3].colors[3],
         },
         {
             name: 'Curtis Sliwa',
             percentage: props.hoveredData.properties.gen21cs_pct || 0,
             votes: props.hoveredData.properties.gen21cs || 0,
-            color: props.COLOR_SCALE.candidates[2].colors[4],
+            color: props.COLOR_SCALE.candidates[2].colors[3],
         },
         {
             name: 'Other',
             percentage: props.hoveredData.properties.gen21othr_pct || 0,
             votes: props.hoveredData.properties.gen21othr || 0,
-            color: props.COLOR_SCALE.other.colors[4],
+            color: props.COLOR_SCALE.other.colors[3],
         }
     ]
         .filter((d: any) => d.votes > 0)

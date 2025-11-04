@@ -27,7 +27,7 @@ const MAPBOX_KEY = 'pk.eyJ1IjoiY3VueWN1ciIsImEiOiJfQmNSMF9NIn0.uRgbcFeJbw2xyTUZY
 const MAPBOX_STYLE_URL = 'mapbox://styles/cunycur/cm2yzn8mp00ox01pa3oxc4syx';
 const COLOR_SCALE = {
     'breakpoints': [
-        5, 10, 25, 50, 75, 100
+        0, /* 5, 10, */ 25, 50, 75/* , 100 */
     ],
     'total_id': 'gen25tot',
     'candidates': [
@@ -38,13 +38,19 @@ const COLOR_SCALE = {
             // each array needs to match the length of the breakpoints
 
             //Blue palette via ColorBrewer
-            'colors': ['#eff3ff', '#c6dbef', '#9ecae1', '#6baed6', '#3182bd', '#08519c']
+            // 'colors': ['#eff3ff', '#c6dbef', '#9ecae1', '#6baed6', '#3182bd', '#08519c']
+            'colors': ['#fff', '#c6dbef', '#9ecae1', /* '#6baed6',  */'#3182bd', '#08519c']
         },
         {
             'id': 'gen25ac',
             'label': 'Andrew Cuomo',
             //Green palette via ColorBrewer
-            'colors': ['#edf8e9', '#c7e9c0', '#a1d99b', '#74c476', '#31a354', '#006d2c']
+            // 'colors': ['#edf8e9', '#c7e9c0', '#a1d99b', '#74c476', '#31a354', '#006d2c']
+            //YellowGreen palette via ColorBrewer
+            // 'colors': ['#ffffcc','#d9f0a3','#addd8e','#78c679','#31a354','#006837']
+            'colors': ['#fff','#d9f0a3','#addd8e', /* '#78c679', */ '#31a354', '#006837']
+            //Orange palette via ColorBrewer
+            // 'colors': ['#feedde','#fdd0a2','#fdae6b','#fd8d3c','#e6550d','#a63603']
         },
         /*         {
             'id': 'gen25cs',
@@ -55,20 +61,25 @@ const COLOR_SCALE = {
             'id': 'gen25cs',
             'label': 'Curtis Sliwa',
             //Red palette via ColorBrewer
-            'colors': ['#fee5d9', '#fcbba1', '#fc9272', '#fb6a4a', '#de2d26', '#a50f15']
+            // 'colors': ['#fee5d9', '#fcbba1', '#fc9272', '#fb6a4a', '#de2d26', '#a50f15']
+            'colors': ['#fff', '#fcbba1', '#fc9272', /* '#fb6a4a', */ '#de2d26', '#a50f15']
         },
         {
             'id': 'gen25ea',
             'label': 'Eric Adams',
             //Purple palette via ColorBrewer
-            'colors': ['#f2f0f7', '#dadaeb', '#bcbddc', '#9e9ac8', '#756bb1', '#54278f']
+            // 'colors': ['#f2f0f7', '#dadaeb', '#bcbddc', '#9e9ac8', '#756bb1', '#54278f']
+            //Purple palette via Material Design https://m2.material.io/design/color/the-color-system.html#tools-for-picking-colors
+            // 'colors': ['#F3E5F5', '#E1BEE7', '#CE93D8', '#AB47BC', '#8E24AA', '#6A1B9A']
+            'colors': ['#fff', '#E1BEE7', '#CE93D8', /* '#AB47BC', */ '#8E24AA', '#6A1B9A']
         }
     ],
     'other': {
         'id': 'gen25othr',
         'label': 'Other',
         //Gray palette via ColorBrewer
-        'colors': ['#f7f7f7', '#d9d9d9', '#bdbdbd', '#969696', '#636363', '#252525']
+        // 'colors': ['#f7f7f7', '#d9d9d9', '#bdbdbd', '#969696', '#636363', '#252525']
+        'colors': ['#fff', '#d9d9d9', '#bdbdbd', /* '#969696', */ '#636363', '#252525']
     }
 }
 
@@ -136,7 +147,7 @@ const features = ref<any[]>([])
 
 
 // Map state for URL sync
-const mapCenter = ref<[number, number]>([-73.92227, 40.71772])
+const mapCenter = ref<[number, number]>([-73.92033, 40.71735])
 const mapZoom = ref<number>(10.5)
 /* const mapCenter = ref<[number, number]>([-73.9438, 40.710])
 const mapZoom = ref<number>(10) */
