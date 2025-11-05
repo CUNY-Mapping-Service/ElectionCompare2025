@@ -22,7 +22,7 @@ interface Props {
     allFeatures?: any[]; // Array of all features for citywide calculations
 }
 
-const scannerPercent = 0
+const scannerPercent = 10.7
 const props = defineProps<Props>();
 const emit = defineEmits<{
     close: []
@@ -492,7 +492,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
             <div class="chart-section">
                 <div class="chart-title">
                     <h3>2025 General (unofficial results)<br /><span
-                            style="font-weight: 200;">{{ scannerPercent }}% of scanners reported, per <a href="https://web.enrboenyc.us/" target="_blank">NYC BOE</a></span></h3>
+                            style="font-weight: 200;">{{ scannerPercent }}% of scanners reported, per <a href="https://web.enrboenyc.us/index.html" target="_blank">NYC BOE</a></span></h3>
                 </div>
                 <div ref="aggChart25"></div>
                 <div class="results-table-container">
@@ -615,7 +615,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                 <div class="chart-section">
                     <div class="chart-title">
                         <h3>2025 General (unofficial results)<br /><span
-                                style="font-weight: 200;">{{ scannerPercent }}% of scanners reported, per <a href="https://web.enrboenyc.us/" target="_blank">NYC BOE</a></span></h3>
+                                style="font-weight: 200;">{{ scannerPercent }}% of scanners reported, per <a href="https://web.enrboenyc.us/index.html" target="_blank">NYC BOE</a></span></h3>
                     </div>
                     <div ref="chart25"></div>
                     <div class="results-table-container">
@@ -738,7 +738,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                 <div class="chart-section">
                     <div class="chart-title">
                         <h3>2025 General (unofficial results)<br /><span
-                                style="font-weight: 200;">{{ scannerPercent }}% of scanners reported, per <a href="https://web.enrboenyc.us/" target="_blank">NYC BOE</a></span></h3>
+                                style="font-weight: 200;">{{ scannerPercent }}% of scanners reported, per <a href="https://web.enrboenyc.us/index.html" target="_blank">NYC BOE</a></span></h3>
                     </div>
                     <div ref="aggChart25"></div>
                     <div class="results-table-container">
