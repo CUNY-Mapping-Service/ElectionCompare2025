@@ -22,7 +22,7 @@ interface Props {
     allFeatures?: any[]; // Array of all features for citywide calculations
 }
 
-const scannerPercent = 25.3
+const scannerPercent = 53
 const props = defineProps<Props>();
 const emit = defineEmits<{
     close: []
