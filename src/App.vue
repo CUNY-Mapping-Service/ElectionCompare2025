@@ -21,7 +21,7 @@ import InfoBox from './InfoBox.vue'
 import Legend from './Legend.vue';
 
 // consts
-const HIDE_ED_VOTE_COUNT_THRESHOLD = 5
+const HIDE_ED_VOTE_COUNT_THRESHOLD = 4 // i.e., less than or equal to 4 or less than 5
 const MAPBOX_KEY = 'pk.eyJ1IjoiY3VueWN1ciIsImEiOiJfQmNSMF9NIn0.uRgbcFeJbw2xyTUZY8gYeA'
 const MAPBOX_STYLE_URL = 'mapbox://styles/cunycur/cm2yzn8mp00ox01pa3oxc4syx';
 const COLOR_SCALE = {

@@ -167,6 +167,13 @@
     "keyterms": ["renter", "tenant", "rental", "apartment", "housing"]
   },
   {
+    "column": "bikelanefilter",
+    "short_label": "Near a protected bike lane",
+    "label": "EDs within 250 ft of a protected bike lane (per NYC New York City Bike Routes on Open Data)",
+    "isFilter": true,
+    "keyterms": ["bike", "bicycle", "lane", "biker", "transportation", "cycling"]
+  },
+  {
     "column": "cvapyouth",
     "short_label": "Substantial young eligible voter population",
     "label": "EDs in census tracts with 25% or more eligible voters age 18-29",
