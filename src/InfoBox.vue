@@ -617,7 +617,9 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                 <div class="chart-section">
                     <div class="chart-title">
                     <h3>2025 General (unofficial results)<br /><span
-                            style="font-weight: 200;">{{ scannerPercent }}% of scanners reported, per <a href="https://web.enrboenyc.us/index.html" target="_blank">NYC BOE</a></span></h3>
+                            style="font-weight: 200;">{{ scannerPercent }}% of scanners reported, per <a href="https://web.enrboenyc.us/index.html" target="_blank">NYC BOE</a></span><br />
+                    <span style="font-weight: 100; font-size:.8em;">Districts with fewer than 5 votes omitted.</span>
+                    </h3>
                     <!-- <h3>2025 General (unofficial results)<br /><span
                             style="font-weight: 200;">More than {{ scannerPercent }} votes reported, per <a href="https://web.enrboenyc.us/index.html" target="_blank">NYC BOE</a></span></h3> -->
                     </div>
