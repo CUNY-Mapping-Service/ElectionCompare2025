@@ -21,6 +21,7 @@ import InfoBox from './InfoBox.vue'
 import Legend from './Legend.vue';
 
 // consts
+const HIDE_ED_VOTE_COUNT_THRESHOLD = 5
 const MAPBOX_KEY = 'pk.eyJ1IjoiY3VueWN1ciIsImEiOiJfQmNSMF9NIn0.uRgbcFeJbw2xyTUZY8gYeA'
 const MAPBOX_STYLE_URL = 'mapbox://styles/cunycur/cm2yzn8mp00ox01pa3oxc4syx';
 const COLOR_SCALE = {
@@ -325,7 +326,7 @@ onMounted(async () => {
     );
 
     // Process features with the fetched data
-    features.value = NYED_GEOM.features.map((d: any) => {
+    const processed_features = NYED_GEOM.features.map((d: any) => {
         const aded25 = String(d.properties.aded25);
         const filterProps = FILTER_PROPERTIES.get(aded25) || {};
         const resultsProps = RESULTS_PROPERTIES.get(aded25) || {};
@@ -367,6 +368,15 @@ onMounted(async () => {
         d.properties.color = SETTINGS.getColor(d.properties);
         return d;
     });
+
+    // modify geometry those on and below the threshold so they are "hidden"
+    features.value = processed_features.map(featureItem => {
+        if(featureItem.properties.gen21total <= HIDE_ED_VOTE_COUNT_THRESHOLD || featureItem.properties.gen25tot <= HIDE_ED_VOTE_COUNT_THRESHOLD){
+            featureItem.geometry.coordinates =  [[[0,0],[0,0],[0,0],[0,0],[0,0]]]
+        }
+        return featureItem
+    })
+
 
     // Load state from URL after data is loaded
     loadFromURL()
