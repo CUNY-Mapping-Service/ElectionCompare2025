@@ -48,6 +48,20 @@
     "keyterms": ["trump", "gop", "republican", "maga"]
   },
   {
+    "column": "primwinzm",
+    "short_label": "EDs won by Mamdani in June primary",
+    "label": "EDs where Zohran Mamdani received most votes at end of RCV ballot rounds in the June 2025 primary",
+    "isFilter": true,
+    "keyterms": ["zohran", "mamdani", "2025", "primary", "rank", "rcv"]
+  },
+  {
+    "column": "primwinac",
+    "short_label": "EDs won by Cuomo in June primary",
+    "label": "EDs where Andrew Cuomo received most votes at end of RCV ballot rounds in the June 2025 primary",
+    "isFilter": true,
+    "keyterms": ["andrew", "cuomo", "2025", "primary", "rank", "rcv"]
+  },
+  {
     "column": "ea2021",
     "short_label": "EDs won by Eric Adams 2021",
     "label": "EDs with 50% or more votes for Eric Adams in 2021",
