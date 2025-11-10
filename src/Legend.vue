@@ -137,6 +137,13 @@ function getLabelText(index: number) {
     border-radius: 4px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     border: 1px solid #ccc;
+    overflow-y: auto;
+}
+
+@media (max-height: 850px) {
+    .layer-toggle {
+        max-height: 5rem;
+    }
 }
 
 .layer-toggle-header {

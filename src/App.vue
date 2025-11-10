@@ -3,7 +3,7 @@
 <script setup lang="ts">
 import { AttributionControl, Map as MaplibreMap, NavigationControl } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css'
-import '@maplibre/maplibre-gl-compare/dist/maplibre-gl-compare.css'
+// import '@maplibre/maplibre-gl-compare/dist/maplibre-gl-compare.css'
 import { computed, onMounted, ref, watch } from 'vue';
 import { isMapboxURL, transformMapboxUrl } from './libs/mapbox-transform';
 import * as d3 from "d3";
@@ -17,6 +17,7 @@ import FILTER_DATA_RAW from './stores/filterdata.csv?raw'
 import METADATA from './stores/metadata.json'
 const RESULTS_CSV_FILE = 'unofficial25results.csv'
 
+import AddressSearch from './AddressSearch.vue';
 import InfoBox from './InfoBox.vue'
 import Legend from './Legend.vue';
 
@@ -37,7 +38,7 @@ const COLOR_SCALE = {
             // each array needs to match the length of the breakpoints
 
             //Blue palette via ColorBrewer
-            'colors': ['#fff', '#bdd7e7','#6baed6','#3182bd','#08519c']
+            'colors': ['#fff', '#bdd7e7', '#6baed6', '#3182bd', '#08519c']
         },
         {
             'id': 'gen25ac',
@@ -45,13 +46,13 @@ const COLOR_SCALE = {
             //Green palette via ColorBrewer
             // 'colors': ['#edf8e9', '#c7e9c0', '#a1d99b', '#74c476', '#31a354', '#006d2c']
             //YellowGreen palette via ColorBrewer
-            'colors': ['#fff', '#ffffcc','#addd8e','#31a354','#006837']
+            'colors': ['#fff', '#ffffcc', '#addd8e', '#31a354', '#006837']
         },
         {
             'id': 'gen25cs',
             'label': 'Curtis Sliwa',
             //Red palette via ColorBrewer
-            'colors': ['#fff', '#fcae91','#fb6a4a','#de2d26','#a50f15']
+            'colors': ['#fff', '#fcae91', '#fb6a4a', '#de2d26', '#a50f15']
         },
         {
             'id': 'gen25ea',
@@ -371,8 +372,8 @@ onMounted(async () => {
 
     // modify geometry those on and below the threshold so they are "hidden"
     features.value = processed_features.map(featureItem => {
-        if(featureItem.properties.gen21total <= HIDE_ED_VOTE_COUNT_THRESHOLD || featureItem.properties.gen25tot <= HIDE_ED_VOTE_COUNT_THRESHOLD){
-            featureItem.geometry.coordinates =  [[[0,0],[0,0],[0,0],[0,0],[0,0]]]
+        if (featureItem.properties.gen21total <= HIDE_ED_VOTE_COUNT_THRESHOLD || featureItem.properties.gen25tot <= HIDE_ED_VOTE_COUNT_THRESHOLD) {
+            featureItem.geometry.coordinates = [[[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]]
         }
         return featureItem
     })
@@ -666,22 +667,22 @@ onMounted(async () => {
                 'text-field': ['get', 'name'],
                 'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
                 "text-size": [
-          "interpolate",
-          [
-            "linear"
-          ],
-          [
-            "zoom"
-          ],
-          0,
-          0,
-          10,
-          0,
-          12,
-          10,
-          22,
-          11
-        ],
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    0,
+                    0,
+                    10,
+                    0,
+                    12,
+                    10,
+                    22,
+                    11
+                ],
             },
             'paint': {
                 'text-color': '#000000',
@@ -866,7 +867,9 @@ onMounted(async () => {
                     :metadata="METADATA" @close="clearClickedId" />
             </div>
             <div class="map-container">
-                <div id="map" class="map"></div>
+                <div id="map" class="map">
+                    <AddressSearch :map="mapInstance" />
+                </div>
                 <div class="cuny-logo-wrapper">
                     <a href="https://www.gc.cuny.edu/center-urban-research" target="_blank"><img :src="cunygclogo"
                             alt="CUNY GC Logo" class="cuny-logo"></a>
