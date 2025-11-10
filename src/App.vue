@@ -125,8 +125,10 @@ const FILTER_PROPERTIES = new Map(
 // state
 const hoveredId = ref<string | number | null>(null)
 const clickedId = ref<string | number | null>(null)
+const addressSearchRef = ref<InstanceType<typeof AddressSearch> | null>(null);
+
 const selectedFilters = ref<Array<{ column: string; label: string; short_label: string }>>([])
-const searchQuery = ref('')
+const filterSearchQuery = ref('')
 const searchResults = ref<Array<{ column: string; label: string; short_label: string }>>([])
 const showSearchResults = ref(false)
 const showCityCouncil = ref(false)
@@ -261,7 +263,7 @@ function addFilter(filter: { column: string; label: string; short_label: string 
         updateURL()
     }
     // Clear search
-    searchQuery.value = ''
+    filterSearchQuery.value = ''
     searchResults.value = []
     showSearchResults.value = false
 }
@@ -272,13 +274,13 @@ function removeFilter(column: string) {
 }
 
 function performSearch() {
-    if (!searchQuery.value.trim()) {
+    if (!filterSearchQuery.value.trim()) {
         // Show all results when query is empty
         searchResults.value = FILTER_OPTIONS
         showSearchResults.value = true
         return
     }
-    const results = searchIndex.search(searchQuery.value)
+    const results = searchIndex.search(filterSearchQuery.value)
     searchResults.value = results.map((index: any) => FILTER_OPTIONS[index]).filter(Boolean) as Array<{ column: string; label: string; short_label: string }>
     showSearchResults.value = true
 }
@@ -290,7 +292,7 @@ function handleBlur() {
 }
 
 // Watch search query
-watch(searchQuery, () => {
+watch(filterSearchQuery, () => {
     performSearch()
 })
 
@@ -788,6 +790,9 @@ onMounted(async () => {
             if (e.features && e.features.length > 0) {
                 const featureId = e.features[0]?.id ?? null;
                 clickedId.value = featureId;
+
+                // Clear the address search box
+                addressSearchRef.value?.clearSearch();
             }
         });
 
@@ -814,6 +819,54 @@ onMounted(async () => {
     });
 })
 
+function selectEDAtPoint(coords: [number, number]) {
+    /** query and select the ED at a given point */
+    if (!mapInstance) return;
+
+    // Convert coordinates to screen point
+    const point = mapInstance.project(coords);
+
+    // Query features at that point from map-fill
+    const features = mapInstance.queryRenderedFeatures(point, {
+        layers: ['map-fill']
+    });
+
+    if (features.length > 0) {
+        const feature = features[0];
+        const edId = feature?.properties?.[SETTINGS.promoteId];
+
+        if (edId) {
+            // Clear previous selection
+            if (clickedId.value !== null) {
+                mapInstance.setFeatureState(
+                    { source: 'map-source', id: clickedId.value },
+                    { clicked: false }
+                );
+            }
+
+            // Set new selection
+            clickedId.value = edId;
+            mapInstance.setFeatureState(
+                { source: 'map-source', id: edId },
+                { clicked: true }
+            );
+
+            updateURL();
+        }
+    }
+}
+
+function handleAddressSelected(address: { name: string; coords: [number, number] }) {
+    mapInstance?.once('moveend', () => {
+        selectEDAtPoint(address.coords);
+    });
+}
+
+function handleCoordinatesSelected(coords: [number, number]) {
+    mapInstance?.once('moveend', () => {
+        selectEDAtPoint(coords);
+    });
+}
 </script>
 
 <template>
@@ -826,7 +879,7 @@ onMounted(async () => {
                 <div class="filters-section">
                     <label for="filter-search">Show Election Districts based on:</label>
                     <div class="search-container">
-                        <input type="text" v-model="searchQuery"
+                        <input type="text" v-model="filterSearchQuery"
                             placeholder="Search filters (e.g., 'renters', 'income')..." class="filter-search"
                             @focus="performSearch()" @blur="handleBlur" autocomplete="off" />
 
@@ -837,7 +890,7 @@ onMounted(async () => {
                             </div>
                         </div>
 
-                        <div v-if="showSearchResults && searchQuery && searchResults.length === 0"
+                        <div v-if="showSearchResults && filterSearchQuery && searchResults.length === 0"
                             class="search-results">
                             <div class="search-result-item no-results">
                                 No filters found
@@ -868,7 +921,8 @@ onMounted(async () => {
             </div>
             <div class="map-container">
                 <div id="map" class="map">
-                    <AddressSearch :map="mapInstance" />
+                    <AddressSearch ref="addressSearchRef" :map="mapInstance" @addressSelected="handleAddressSelected"
+                        @coordinatesSelected="handleCoordinatesSelected" />
                 </div>
                 <div class="cuny-logo-wrapper">
                     <a href="https://www.gc.cuny.edu/center-urban-research" target="_blank"><img :src="cunygclogo"

@@ -16,6 +16,10 @@ const emit = defineEmits<{
     coordinatesSelected: [coords: [number, number]];
 }>();
 
+defineExpose({
+    clearSearch
+});
+
 const searchQuery = ref('');
 const searchResults = ref<Address[]>([]);
 const showResults = ref(false);
@@ -25,14 +29,20 @@ const addressMarker = ref<maplibregl.Marker | null>(null);
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
+function clearSearch() {
+    searchQuery.value = '';
+    searchResults.value = [];
+    showResults.value = false;
+    isExpanded.value = false;
+
+    if (addressMarker.value) {
+        addressMarker.value.remove();
+        addressMarker.value = null;
+    }
+}
+
 function formatAddress(street: string, borough: string, postalcode: string, housenumber: string): string {
-    const parts = [
-        housenumber,
-        street,
-        borough,
-        postalcode
-    ].filter(Boolean);
-    return parts.join(', ');
+    return `${housenumber ? housenumber + ' ' : ''}${street}, ${borough}, ${postalcode}`
 }
 
 async function searchAddress(keyword: string) {
@@ -249,7 +259,7 @@ watch(searchQuery, (newValue) => {
     .desktop-view {
         display: flex;
         gap: 0.5rem;
-        width: 35%;
+        max-width: 42%;
     }
 }
 
