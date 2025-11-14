@@ -3,11 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      http-equiv="refresh"
-      content="0; url=https://www.urbanresearchmaps.org/electioncompare2025/"
-    />
     <title>Redirecting...</title>
+    <script type="text/javascript">
+      // redirect and keep URL parameters
+      window.onload = function () {
+        var currentURL = window.location.href
+        var targetURL = 'https://www.urbanresearchmaps.org/electioncompare2025/'
+        var newURL = targetURL + '?' + currentURL.split('?')[1]
+        window.location.href = newURL
+      }
+    </script>
   </head>
   <body>
     <h1>
