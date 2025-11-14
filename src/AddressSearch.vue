@@ -246,7 +246,6 @@ watch(searchQuery, (newValue) => {
 .mobile-view {
     display: flex;
     gap: 0.5rem;
-    pointer-events: all;
 }
 
 .desktop-view {
@@ -291,6 +290,7 @@ watch(searchQuery, (newValue) => {
     cursor: pointer;
     transition: all 0.2s;
     color: #374151;
+    pointer-events: all;
 }
 
 .icon-button:hover {
