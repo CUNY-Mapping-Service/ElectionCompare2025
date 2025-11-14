@@ -1,0 +1,204 @@
+[
+  {
+    "column": "gen21tot",
+    "label": "Total mayoral votes in 2021 allocated to 2025 election districts",
+    "isFilter": false,
+    "keyterms": []
+  },
+  {
+    "column": "gen21ea",
+    "label": "Eric Adams votes in 2021 allocated to 2025 election districts",
+    "isFilter": false,
+    "keyterms": []
+  },
+  {
+    "column": "gen21cs",
+    "label": "Curtis Sliwa votes in 2021 allocated to 2025 election districts",
+    "isFilter": false,
+    "keyterms": []
+  },
+  {
+    "column": "gen21othr",
+    "label": "Other candidate votes in 2021 allocated to 2025 election districts",
+    "isFilter": false,
+    "keyterms": []
+  },
+  {
+    "column": "win21",
+    "label": "Name of candidate with most 2021 allocated votes per election district",
+    "isFilter": false,
+    "keyterms": []
+  },
+  {
+    "column": "rvtot25",
+    "label": "Total registered voters as of July 2025",
+    "isFilter": false,
+    "keyterms": []
+  },
+  {
+    "column": "rvactive725",
+    "label": "Active registered voters (voted in general in last 8 years or registered in 2024 or 2025)",
+    "isFilter": false
+  },
+  {
+    "column": "djt2024",
+    "short_label": "Trump vote strength 2024",
+    "label": "EDs with 40% or more votes for Donald Trump in 2024",
+    "isFilter": true,
+    "keyterms": ["trump", "gop", "republican", "maga"]
+  },
+  {
+    "column": "primwinzm",
+    "short_label": "EDs won by Mamdani in June primary",
+    "label": "EDs where Zohran Mamdani received most votes at end of RCV ballot rounds in the June 2025 primary",
+    "isFilter": true,
+    "keyterms": ["zohran", "mamdani", "2025", "primary", "rank", "rcv"]
+  },
+  {
+    "column": "primwinac",
+    "short_label": "EDs won by Cuomo in June primary",
+    "label": "EDs where Andrew Cuomo received most votes at end of RCV ballot rounds in the June 2025 primary",
+    "isFilter": true,
+    "keyterms": ["andrew", "cuomo", "2025", "primary", "rank", "rcv"]
+  },
+  {
+    "column": "ea2021",
+    "short_label": "EDs won by Eric Adams 2021",
+    "label": "EDs with 50% or more votes for Eric Adams in 2021",
+    "isFilter": true,
+    "keyterms": ["eric", "adams", "2021", "mayor", "democrat"]
+  },
+  {
+    "column": "cs2021",
+    "short_label": "EDs won by Curtis Sliwa 2021",
+    "label": "EDs with 50% or more votes for Curtis Sliwa in 2021",
+    "isFilter": true,
+    "keyterms": ["curtis", "sliwa", "2021", "mayor", "gop", "republican"]
+  },
+  {
+    "column": "rvhisp",
+    "short_label": "Registered voters w/Hispanic surnames",
+    "label": "EDs with 1/3 or more active registered voters w/Hispanic surnames (\"active\" = voted in at least 1 general election in last 8 years or registered to vote in 2024 or 2025.)",
+    "isFilter": true,
+    "keyterms": ["hispanic", "latino", "latina", "latinx", "spanish", "surname", "name"]
+  },
+  {
+    "column": "rvjwsh",
+    "short_label": "Registered voters w/Jewish surnames",
+    "label": "EDs with 10% or more active registered voters w/Jewish surnames (\"active\" = voted in at least 1 general election in last 8 years or registered to vote in 2024 or 2025.)",
+    "isFilter": true,
+    "keyterms": ["jewish", "jew", "judaism", "surname", "religious"]
+  },
+  {
+    "column": "rvirit",
+    "short_label": "Registered voters w/Irish or Italian surnames",
+    "label": "EDs with 6% or more active registered voters w/Irish or Italian surnames (\"active\" = voted in at least 1 general election in last 8 years or registered to vote in 2024 or 2025.)",
+    "isFilter": true,
+    "keyterms": ["irish", "italian", "catholic", "surname", "religious", "european"]
+  },
+  {
+    "column": "rvmslm",
+    "short_label": "Registered voters w/Muslim surnames",
+    "label": "EDs with 8% or more active registered voters w/Muslim surnames (\"active\" = voted in at least 1 general election in last 8 years or registered to vote in 2024 or 2025.)",
+    "isFilter": true,
+    "keyterms": ["muslim", "islam", "islamic", "surname", "religious"]
+  },
+  {
+    "column": "rvchns",
+    "short_label": "Registered voters w/Chinese surnames",
+    "label": "EDs with 8% or more active registered voters w/Chinese surnames (\"active\" = voted in at least 1 general election in last 8 years or registered to vote in 2024 or 2025.)",
+    "isFilter": true,
+    "keyterms": ["chinese", "china", "asian", "surname"]
+  },
+  {
+    "column": "rvgopnop",
+    "short_label": "GOP or 'No party' voters",
+    "label": "EDs with 40% or more active registered voters enrolled as GOP or no party (\"active\" = voted in at least 1 general election in last 8 years or registered to vote in 2024 or 2025.)",
+    "isFilter": true,
+    "keyterms": ["enrollment", "republican", "gop", "conservative", "independent", "no party", "unaffiliated", "nonpartisan", "blank"]
+  },
+  {
+    "column": "cvapnhw",
+    "short_label": "Census areas with majority White eligible voters",
+    "label": "EDs in census block groups with non-Hispanic White majority of eligible voters (citizens of voting age/CVAP)",
+    "isFilter": true,
+    "keyterms": ["white", "caucasian", "non-hispanic white", "demographic", "race", "racial"]
+  },
+  {
+    "column": "cvapblack",
+    "short_label": "Census areas with predominantly Black eligible voters",
+    "label": "EDs in census block groups with 40% or more Black eligible voters (citizens of voting age/CVAP)",
+    "isFilter": true,
+    "keyterms": ["black", "african american", "african-american", "afro", "demographic", "race", "racial"]
+  },
+  {
+    "column": "cvaphisp",
+    "short_label": "Census areas with predominantly Hispanic eligible voters",
+    "label": "EDs in census block groups with 40% or more Hispanic eligible voters (citizens of voting age/CVAP)",
+    "isFilter": true,
+    "keyterms": ["hispanic", "latino", "latina", "latinx", "spanish", "demographic", "race", "racial", "ethnicity"]
+  },
+  {
+    "column": "cvapasian",
+    "short_label": "Census areas with predominantly Asian eligible voters",
+    "label": "EDs in census block groups with 40% or more Asian eligible voters (citizens of voting age/CVAP)",
+    "isFilter": true,
+    "keyterms": ["asian", "asian american", "pacific islander", "demographic", "race", "racial"]
+  },
+  {
+    "column": "acsbaplus",
+    "short_label": "Educational attainment: majority BA or higher",
+    "label": "EDs in census tracts with 50% or more of adults age 25+ with bachelor's degree or higher, per American Community Survey",
+    "isFilter": true,
+    "keyterms": ["education", "educated", "college", "degree", "bachelor", "university", "graduate", "higher education"]
+  },
+  {
+    "column": "acsmedinc125",
+    "short_label": "Median household income $125,000 or higher",
+    "label": "EDs in census tracts with median household income of $125,000 or higher, per American Community Survey",
+    "isFilter": true,
+    "keyterms": ["income", "wealthy", "rich", "affluent", "high income", "earnings", "salary", "money"]
+  },
+  {
+    "column": "acsmedinc45",
+    "short_label": "Median household income $45,000 or less",
+    "label": "EDs in census tracts with median household income of $45,000 or less (above $0), per American Community Survey",
+    "isFilter": true,
+    "keyterms": ["income", "low income", "poor", "poverty", "working class", "earnings", "salary", "money"]
+  },
+  {
+    "column": "ascown",
+    "short_label": "Majority owners",
+    "label": "EDs in census tracts with 50% or more owner-occupied households, per American Community Survey",
+    "isFilter": true,
+    "keyterms": ["homeowner", "owner", "homeownership", "property owner", "housing", "home"]
+  },
+  {
+    "column": "ascrent",
+    "short_label": "Majority renters",
+    "label": "EDs in census tracts with 50% or more renter-occupied households, per American Community Survey",
+    "isFilter": true,
+    "keyterms": ["renter", "tenant", "rental", "apartment", "housing"]
+  },
+  {
+    "column": "bikelanefilter",
+    "short_label": "Near a protected bike lane",
+    "label": "EDs within 250 ft of a protected bike lane (per NYC New York City Bike Routes on Open Data)",
+    "isFilter": true,
+    "keyterms": ["bike", "bicycle", "lane", "biker", "transportation", "cycling"]
+  },
+  {
+    "column": "cvapyouth",
+    "short_label": "Substantial young eligible voter population",
+    "label": "EDs in census tracts with 25% or more eligible voters age 18-29",
+    "isFilter": true,
+    "keyterms": ["youth", "young", "millennial", "gen z", "18-29", "age", "demographic"]
+  },
+  {
+    "column": "cvapsenior",
+    "short_label": "Substantial senior eligible voter population",
+    "label": "EDs in census tracts with 25% or more eligible voters age 65+",
+    "isFilter": true,
+    "keyterms": ["senior", "elderly", "old", "older", "65+", "age", "demographic", "retirement", "retiree"]
+  }
+]
