@@ -491,7 +491,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
             <!-- 2025 Citywide -->
             <div class="chart-section">
                 <div class="chart-title">
-                    <h3>2025 General (unofficial results)<br /><span
+                    <h3>2025 General (certified results)<br /><span
                             style="font-weight: 200;">{{ scannerPercent }}% of scanners reported, per <a href="https://web.enrboenyc.us/index.html" target="_blank">NYC BOE</a></span></h3>
                 <!--     <h3>2025 General (unofficial results)<br /><span
                             style="font-weight: 200;">More than {{ scannerPercent }} votes reported, per <a href="https://web.enrboenyc.us/index.html" target="_blank">NYC BOE</a></span></h3> -->
@@ -616,7 +616,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
                 <!-- 2025 Election Chart -->
                 <div class="chart-section">
                     <div class="chart-title">
-                    <h3>2025 General (unofficial results)<br /><span
+                    <h3>2025 General (certified results)<br /><span
                             style="font-weight: 200;">{{ scannerPercent }}% of scanners reported, per <a href="https://web.enrboenyc.us/index.html" target="_blank">NYC BOE</a></span><br />
                     <span style="font-weight: 100; font-size:.8em;">Districts with fewer than 5 votes omitted.</span>
                     </h3>
@@ -743,7 +743,7 @@ watch([data25, data21, aggregateData25, aggregateData21, citywideData25, citywid
             <template v-if="filteredFeatures && filteredFeatures.length > 0">
                 <div class="chart-section">
                     <div class="chart-title">
-                    <h3>2025 General (unofficial results)<br /><span
+                    <h3>2025 General (certified results)<br /><span
                             style="font-weight: 200;">{{ scannerPercent }}% of scanners reported, per <a href="https://web.enrboenyc.us/index.html" target="_blank">NYC BOE</a></span></h3>
                    <!--  <h3>2025 General (unofficial results)<br /><span
                             style="font-weight: 200;">{{ scannerPercent }} votes reported, per <a href="https://web.enrboenyc.us/index.html" target="_blank">NYC BOE</a></span></h3> -->
