@@ -239,6 +239,7 @@ watch(searchQuery, (newValue) => {
     left: 10px;
     right: 10px;
     z-index: 10;
+    pointer-events: none;
 }
 
 /* Mobile view styles */
@@ -249,6 +250,7 @@ watch(searchQuery, (newValue) => {
 
 .desktop-view {
     display: none;
+    pointer-events: all;
 }
 
 @media (min-width: 600px) {
@@ -288,6 +290,7 @@ watch(searchQuery, (newValue) => {
     cursor: pointer;
     transition: all 0.2s;
     color: #374151;
+    pointer-events: all;
 }
 
 .icon-button:hover {

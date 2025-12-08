@@ -143,6 +143,7 @@ const mapZoom = ref<number>(10.5)
 /* const mapCenter = ref<[number, number]>([-73.9438, 40.710])
 const mapZoom = ref<number>(10) */
 let mapInstance: MaplibreMap | null = null
+let isInitializing = true
 
 // Initialize FlexSearch index
 const searchIndex = new Index({
@@ -191,29 +192,40 @@ const filteredDistricts = computed(() => {
 
 // URL State Management
 function updateURL() {
-    const params = new URLSearchParams()
+    if (!isInitializing) {
+        const params = new URLSearchParams()
 
-    // Add filters
-    if (selectedFilters.value.length > 0) {
-        params.set('filters', selectedFilters.value.map(f => f.column).join(','))
+        // Add filters
+        if (selectedFilters.value.length > 0) {
+            params.set('filters', selectedFilters.value.map(f => f.column).join(','))
+        }
+
+        // Add map position
+        if (mapInstance) {
+            const center = mapInstance.getCenter()
+            const zoom = mapInstance.getZoom()
+            params.set('lat', center.lat.toFixed(5))
+            params.set('lng', center.lng.toFixed(5))
+            params.set('zoom', zoom.toFixed(2))
+        }
+
+        // Add selected ED
+        if (clickedId.value) {
+            params.set('ed', String(clickedId.value))
+        }
+
+        // overlay visibility
+        const overlays = []
+        if (showCityCouncil.value) overlays.push('citycouncil')
+        if (showNYCHA.value) overlays.push('nycha')
+        if (showSubway.value) overlays.push('subway')
+        if (overlays.length > 0) {
+            params.set('overlays', overlays.join(','))
+        }
+
+        const newURL = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname
+        window.history.replaceState({}, '', newURL)
     }
-
-    // Add map position
-    if (mapInstance) {
-        const center = mapInstance.getCenter()
-        const zoom = mapInstance.getZoom()
-        params.set('lat', center.lat.toFixed(5))
-        params.set('lng', center.lng.toFixed(5))
-        params.set('zoom', zoom.toFixed(2))
-    }
-
-    // Add selected ED
-    if (clickedId.value) {
-        params.set('ed', String(clickedId.value))
-    }
-
-    const newURL = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname
-    window.history.replaceState({}, '', newURL)
 }
 
 function loadFromURL() {
@@ -712,14 +724,6 @@ onMounted(async () => {
             }
         })
 
-        // Apply clicked state from URL
-        if (clickedId.value !== null) {
-            map.setFeatureState(
-                { source: 'map-source', id: clickedId.value },
-                { clicked: true }
-            );
-        }
-
         // Watch for filter changes and update the mask layer
         watch(selectedFilters, (newFilters) => {
             // @ts-ignore
@@ -732,6 +736,7 @@ onMounted(async () => {
             map.setLayoutProperty('citycouncil-fill', 'visibility', visibility);
             map.setLayoutProperty('citycouncil-line', 'visibility', visibility);
             map.setLayoutProperty('citycouncil-label', 'visibility', visibility);
+            updateURL();
         });
 
         // Watch for NYCHA layer toggle
@@ -740,6 +745,7 @@ onMounted(async () => {
             map.setLayoutProperty('nycha-fill', 'visibility', visibility);
             map.setLayoutProperty('nycha-line', 'visibility', visibility);
             map.setLayoutProperty('nycha-label', 'visibility', visibility);
+            updateURL();
         });
 
         // Watch for Subway layer toggle
@@ -747,7 +753,30 @@ onMounted(async () => {
             const visibility = newValue ? 'visible' : 'none';
             map.setLayoutProperty('subway-line', 'visibility', visibility);
             map.setLayoutProperty('subway-label', 'visibility', visibility);
+            updateURL();
         });
+
+        // load overlay visibility states from URL after watchers are set up
+        const params = new URLSearchParams(window.location.search)
+        const overlaysParam = params.get('overlays')
+
+        if (overlaysParam) {
+            const overlays = overlaysParam.split(',')
+            showCityCouncil.value = overlays.includes('citycouncil')
+            showNYCHA.value = overlays.includes('nycha')
+            showSubway.value = overlays.includes('subway')
+        }
+
+        // Allow updateURL on future changes
+        isInitializing = false
+
+        // Apply clicked state from URL
+        if (clickedId.value !== null) {
+            map.setFeatureState(
+                { source: 'map-source', id: clickedId.value },
+                { clicked: true }
+            );
+        }
 
         // Add hover interactions
         let hoveredBeforeId: string | number | null = null;
@@ -928,7 +957,8 @@ function handleCoordinatesSelected(coords: [number, number]) {
                     <a href="https://www.gc.cuny.edu/center-urban-research" target="_blank"><img :src="cunygclogo"
                             alt="CUNY GC Logo" class="cuny-logo"></a>
                 </div>
-                <Legend :COLOR_SCALE="COLOR_SCALE" :showCityCouncil="showCityCouncil" :showNYCHA="showNYCHA"
+                <Legend :COLOR_SCALE="COLOR_SCALE" 
+                    :showCityCouncil="showCityCouncil" :showNYCHA="showNYCHA" :showSubway="showSubway"
                     @update:showCityCouncil="showCityCouncil = $event" @update:showSubway="showSubway = $event"
                     @update:showNYCHA="showNYCHA = $event" />
             </div>

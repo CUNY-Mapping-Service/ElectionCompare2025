@@ -15,18 +15,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Build
+      - name: Copy redirect.html to index.html
         run: |
-          npm install
-          npm run build
+          cp redirect.html index.html
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4.7.3
         with:
           branch: gh-pages
-          folder: dist
+          folder: .
