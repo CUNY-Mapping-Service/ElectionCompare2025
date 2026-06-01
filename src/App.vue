@@ -132,6 +132,7 @@ const filterSearchQuery = ref('')
 const searchResults = ref<Array<{ column: string; label: string; short_label: string }>>([])
 const showSearchResults = ref(false)
 const showCityCouncil = ref(false)
+const showCongress = ref(false)
 const showNYCHA = ref(false)
 const showSubway = ref(false)
 const features = ref<any[]>([])
@@ -217,6 +218,7 @@ function updateURL() {
         // overlay visibility
         const overlays = []
         if (showCityCouncil.value) overlays.push('citycouncil')
+        if (showCongress.value) overlays.push('congress')
         if (showNYCHA.value) overlays.push('nycha')
         if (showSubway.value) overlays.push('subway')
         if (overlays.length > 0) {
@@ -441,6 +443,13 @@ onMounted(async () => {
             maxzoom: 14
         });
 
+        map.addSource('congress-source', {
+            type: 'vector',
+            tiles: ['https://www.urbanresearchmaps.org/tiles/common.wrm_congress.geom,common.wrm_congress.geom_pt/{z}/{x}/{y}'],
+            minzoom: 0,
+            maxzoom: 14
+        });
+
         map.addSource('nycha-source', {
             type: 'vector',
             tiles: ['https://www.urbanresearchmaps.org/tiles/common.nycha.geom,common.nycha.geom_pt/{z}/{x}/{y}'],
@@ -518,6 +527,54 @@ onMounted(async () => {
             'layout': {
                 'visibility': 'none',
                 'text-field': ['get', 'districtid'],
+                'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+                'text-size': 12
+            },
+            'paint': {
+                'text-color': '#4d4d4d',
+                'text-halo-color': '#ffffff',
+                'text-halo-width': 1
+            }
+        });
+
+
+        // Add Congress district layers
+        map.addLayer({
+            'id': 'congress-fill',
+            'type': 'fill',
+            'source': 'congress-source',
+            'source-layer': 'common.wrm_congress.geom',
+            'layout': {
+                'visibility': 'none'
+            },
+            'paint': {
+                'fill-color': 'transparent',
+                'fill-outline-color': '#000000'
+            }
+        });
+
+        map.addLayer({
+            'id': 'congress-line',
+            'type': 'line',
+            'source': 'congress-source',
+            'source-layer': 'common.wrm_congress.geom',
+            'layout': {
+                'visibility': 'none'
+            },
+            'paint': {
+                'line-color': '#4d4d4d',
+                'line-width': 2
+            }
+        });
+
+        map.addLayer({
+            'id': 'congress-label',
+            'type': 'symbol',
+            'source': 'congress-source',
+            'source-layer': 'common.wrm_congress.geom_pt',
+            'layout': {
+                'visibility': 'none',
+                'text-field': ['get', 'name'],
                 'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
                 'text-size': 12
             },
@@ -739,6 +796,15 @@ onMounted(async () => {
             updateURL();
         });
 
+        // Watch for Congress layer toggle
+        watch(showCongress, (newValue) => {
+            const visibility = newValue ? 'visible' : 'none';
+            map.setLayoutProperty('congress-fill', 'visibility', visibility);
+            map.setLayoutProperty('congress-line', 'visibility', visibility);
+            map.setLayoutProperty('congress-label', 'visibility', visibility);
+            updateURL();
+        });
+
         // Watch for NYCHA layer toggle
         watch(showNYCHA, (newValue) => {
             const visibility = newValue ? 'visible' : 'none';
@@ -763,6 +829,7 @@ onMounted(async () => {
         if (overlaysParam) {
             const overlays = overlaysParam.split(',')
             showCityCouncil.value = overlays.includes('citycouncil')
+            showCongress.value = overlays.includes('congress')
             showNYCHA.value = overlays.includes('nycha')
             showSubway.value = overlays.includes('subway')
         }
@@ -958,8 +1025,8 @@ function handleCoordinatesSelected(coords: [number, number]) {
                             alt="CUNY GC Logo" class="cuny-logo"></a>
                 </div>
                 <Legend :COLOR_SCALE="COLOR_SCALE" 
-                    :showCityCouncil="showCityCouncil" :showNYCHA="showNYCHA" :showSubway="showSubway"
-                    @update:showCityCouncil="showCityCouncil = $event" @update:showSubway="showSubway = $event"
+                    :showCityCouncil="showCityCouncil" :showCongress="showCongress" :showNYCHA="showNYCHA" :showSubway="showSubway"
+                    @update:showCityCouncil="showCityCouncil = $event" @update:showCongress="showCongress = $event" @update:showSubway="showSubway = $event"
                     @update:showNYCHA="showNYCHA = $event" />
             </div>
         </div>
