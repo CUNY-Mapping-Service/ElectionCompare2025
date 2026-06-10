@@ -562,8 +562,8 @@ onMounted(async () => {
                 'visibility': 'none'
             },
             'paint': {
-                'line-color': '#4d4d4d',
-                'line-width': 2
+                'line-color': '#8d0091',
+                'line-width': 3
             }
         });
 
@@ -579,7 +579,7 @@ onMounted(async () => {
                 'text-size': 12
             },
             'paint': {
-                'text-color': '#4d4d4d',
+                'text-color': '#8d0091',
                 'text-halo-color': '#ffffff',
                 'text-halo-width': 1
             }
